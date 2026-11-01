@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Serif:ital,wght@0,500;0,600;1,500&family=Noto+Sans+Math&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261028d">
+<link rel="stylesheet" href="styles.css?v=20261101a">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -21,6 +21,7 @@
       <button type="button" role="tab" class="wtab" id="tab3" data-weekbtn="3" aria-selected="false" tabindex="-1"><b>Week 3</b><span>Algorithms</span><i></i></button>
       <button type="button" role="tab" class="wtab" id="tab4" data-weekbtn="4" aria-selected="false" tabindex="-1"><b>Week 4</b><span>Relations I</span><i></i></button>
       <button type="button" role="tab" class="wtab" id="tab5" data-weekbtn="5" aria-selected="false" tabindex="-1"><b>Week 5</b><span>Relations II</span><i></i></button>
+      <button type="button" role="tab" class="wtab" id="tab8" data-weekbtn="8" aria-selected="false" tabindex="-1"><b>Week 6</b><span>Graphs</span><i></i></button>
       <button type="button" role="tab" class="wtab exam" id="tab6" data-weekbtn="6" aria-selected="false" tabindex="-1"><b>Exam Lab</b><span>Practice</span><i></i></button>
       <button type="button" role="tab" class="wtab exam" id="tab7" data-weekbtn="7" aria-selected="false" tabindex="-1"><b>Test 1</b><span>Mock paper</span><i></i></button>
     </nav>
@@ -105,6 +106,19 @@
     <a href="#w5-checkpoint">Weekly checkpoint</a>
     <div class="prog"><span id="w5-prog-txt">Practice: 0 of 10 attempted</span><div class="bar"><i id="w5-prog-bar"></i></div></div>
   </div>
+  <div class="navgroup" data-week="8" hidden>
+    <a href="#w8-top">Start here</a>
+    <a href="#w8-terms">Terminology</a>
+    <a href="#w8-special">Special graphs</a>
+    <a href="#w8-represent">Representing graphs</a>
+    <a href="#w8-connect">Connectivity</a>
+    <a href="#w8-shortest">Dijkstra</a>
+    <a href="#w8-mistakes">Common mistakes</a>
+    <a href="#w8-recall">Active recall</a>
+    <a href="#w8-practice">Practice set</a>
+    <a href="#w8-checkpoint">Weekly checkpoint</a>
+    <div class="prog"><span id="w8-prog-txt">Practice: 0 of 10 attempted</span><div class="bar"><i id="w8-prog-bar"></i></div></div>
+  </div>
   <div class="navgroup" data-week="6" hidden>
     <a href="#w6-top">Start here</a>
     <a href="#w6-patterns">Question methods</a>
@@ -144,6 +158,7 @@
     <button type="button" class="wcard" data-open-week="3"><span class="wnum">Week 3</span><b>Basic Algorithms</b><span class="wdesc">Pseudocode, searching, sorting and greedy methods.</span><span class="wtools">Try: step-through players for each algorithm</span><span class="wprog"><i></i></span><span class="wptxt"></span></button>
     <button type="button" class="wcard" data-open-week="4"><span class="wnum">Week 4</span><b>Relations I</b><span class="wdesc">Reflexive, symmetric, antisymmetric and transitive relations; combining and composing.</span><span class="wtools">Try: the relation explorer</span><span class="wprog"><i></i></span><span class="wptxt"></span></button>
     <button type="button" class="wcard" data-open-week="5"><span class="wnum">Week 5</span><b>Relations II</b><span class="wdesc">Matrices, digraphs, equivalence relations, classes and partitions.</span><span class="wtools">Try: one relation in three pictures</span><span class="wprog"><i></i></span><span class="wptxt"></span></button>
+    <button type="button" class="wcard" data-open-week="8"><span class="wnum">Week 6</span><b>Graphs</b><span class="wdesc">Graph terms, degrees, special graphs, adjacency lists and matrices, paths and Dijkstra's shortest paths.</span><span class="wtools">Try: the graph lab and the Dijkstra table</span><span class="wprog"><i></i></span><span class="wptxt"></span></button>
     <button type="button" class="wcard exam" data-open-week="6"><span class="wnum">Exam Lab</span><b>Practice for the exam</b><span class="wdesc">Fresh exam-style questions with instant checking, a mock exam, graph tools and a cheat sheet.</span><span class="wtools">Try: a mock exam on all four topics</span><span class="wprog"><i></i></span><span class="wptxt"></span></button>
   </div>
 </section>
@@ -1124,6 +1139,219 @@ j := n {j is the right endpoint of the interval}
 
 </div>
 
+<!-- Week 6 (Graphs) uses the internal number 8 so the Exam Lab (6) and Test 1 (7) keep their ids and saved progress. -->
+<div class="week w8" data-week="8" id="week8" role="tabpanel" hidden>
+<section class="hero" id="w8-top">
+  <h1>Dots, lines, and the shortest way between them.</h1>
+  <p class="lead">This week covers your Chapter 4 slides on graphs: graph terminology, special graphs, representing graphs, connectivity and Dijkstra's shortest-path algorithm. Tutorial 5 is in the practice set. Anything I add that is not on your slides is labelled "Beyond the slides".</p>
+  <p>The graph lab below draws any graph you type and works out the degrees, the neighbourhoods, the type of graph, the components, and the adjacency list and matrices. Type edges like <span class="e">a-b, b-c, c-c</span> (type an edge twice for a multiple edge), or press a slide example.</p>
+
+  <div class="card lab">
+    <label for="w8-gl-e">Edges</label>
+    <input type="text" id="w8-gl-e" value="a-b, a-f, b-c, b-f, b-e, c-f, c-e, c-d, e-f" autocomplete="off" spellcheck="false">
+    <label for="w8-gl-v">Extra vertices (optional, for isolated ones)</label>
+    <input type="text" id="w8-gl-v" value="g" autocomplete="off" spellcheck="false" placeholder="g">
+    <label class="xopt" style="margin-top:10px"><input type="checkbox" id="w8-gl-dir"> <span>Directed (read a-b as an arrow from a to b)</span></label>
+    <div class="togrow" role="group" aria-label="Slide example graphs">
+      <button class="btn" type="button" data-gl-preset="w8-G">Slide graph G (degrees)</button>
+      <button class="btn" type="button" data-gl-preset="w8-H">Slide graph H (degrees)</button>
+      <button class="btn" type="button" data-gl-preset="w8-list1">Slide adjacency list (simple)</button>
+      <button class="btn" type="button" data-gl-preset="w8-list2">Slide adjacency list (directed)</button>
+      <button class="btn" type="button" data-gl-preset="w8-pseudo">Slide pseudograph matrix</button>
+      <button class="btn" type="button" data-gl-preset="w8-paths">Slide paths example</button>
+    </div>
+    <div id="w8-gl-out"></div>
+  </div>
+
+  <p><b>Objectives.</b> By the end you can: name the type of a graph (simple, multigraph, pseudograph, directed); find degrees, neighbourhoods, in-degrees and out-degrees; recognise K<sub>n</sub>, C<sub>n</sub>, W<sub>n</sub>, bipartite graphs and K<sub>m,n</sub>; represent a graph with an adjacency list, an adjacency matrix and an incidence matrix; read paths, circuits and connected components; and find shortest paths with Dijkstra's algorithm.</p>
+</section>
+
+<section id="w8-terms">
+  <h2>1. Graphs and graph terminology</h2>
+  <p><b>Big picture.</b> A graph is a set of dots (vertices) joined by lines (edges). Road maps, social networks and computer networks are all graphs. Last week a digraph pictured a relation; this week graphs are the main object.</p>
+  <div class="idea"><b>Definition (from your slides).</b> A <b>graph</b> <span class="e">G = (V, E)</span> consists of a nonempty set V of <b>vertices</b> (or nodes) and a set E of <b>edges</b>. Each edge has either one or two vertices associated with it, called its <b>endpoints</b>. An edge is said to <b>connect</b> its endpoints.</div>
+  <div class="idea"><b>Definition.</b> A <b>directed graph</b> (digraph) G = (V, E) has a nonempty set V of vertices and a set E of <b>directed edges</b> (arcs). Each directed edge is associated with an ordered pair (u, v) and is said to <b>start at u</b> and <b>end at v</b>. Graphs whose edges are not ordered are <b>undirected</b>.</div>
+
+  <h3>Kinds of graph</h3>
+  <ul>
+    <li>A <b>simple graph</b>: each edge connects two different vertices, and no two edges connect the same pair.</li>
+    <li>A <b>multigraph</b> may have <b>multiple edges</b> between the same two vertices. If m edges connect u and v, the edge {u, v} has <b>multiplicity</b> m.</li>
+    <li>A <b>loop</b> is an edge from a vertex to itself. A <b>pseudograph</b> may have loops as well as multiple edges.</li>
+    <li>A <b>simple directed graph</b> has no loops and no multiple directed edges. A <b>directed multigraph</b> may have multiple directed edges (m edges from u to v: (u, v) has multiplicity m).</li>
+  </ul>
+  <div class="scroll"><table>
+    <tr><th class="l">Type</th><th class="l">Edges</th><th>Multiple edges?</th><th>Loops?</th></tr>
+    <tr><td class="l">Simple graph</td><td class="l">Undirected</td><td>No</td><td>No</td></tr>
+    <tr><td class="l">Multigraph</td><td class="l">Undirected</td><td>Yes</td><td>No</td></tr>
+    <tr><td class="l">Pseudograph</td><td class="l">Undirected</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td class="l">Simple directed graph</td><td class="l">Directed</td><td>No</td><td>No</td></tr>
+    <tr><td class="l">Directed multigraph</td><td class="l">Directed</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td class="l">Mixed graph</td><td class="l">Directed and undirected</td><td>Yes</td><td>Yes</td></tr>
+  </table></div>
+  <div class="tip"><b>Three questions to classify a graph</b> (from your slides): Are the edges directed or undirected? Are there multiple edges between the same pair? Are there loops?</div>
+
+  <h3>Adjacent, neighbourhood, degree</h3>
+  <ul>
+    <li><b>Adjacent</b> (neighbours): u and v are adjacent if an edge e joins them. The edge e is <b>incident with</b> u and v.</li>
+    <li><b>Neighbourhood</b> <span class="e">N(v)</span>: the set of all neighbours of v. For a set A of vertices, <span class="e">N(A)</span> is the union of N(v) over all v in A.</li>
+    <li><b>Degree</b> <span class="e">deg(v)</span>: the number of edges incident with v, where <b>a loop counts two</b>.</li>
+  </ul>
+  <p><b>Slide example.</b> Press "Slide graph G" in the lab: deg(a) = 2, deg(b) = deg(c) = deg(f) = 4, deg(d) = 1, deg(e) = 3, deg(g) = 0, and N(g) = ∅ (g is isolated). Then press "Slide graph H": the loop at b adds 2, so deg(b) = 6, and b is in its own neighbourhood: N(b) = {a, b, c, d, e}.</p>
+  <div class="beyond">Beyond the slides: the <b>handshaking theorem</b>. In an undirected graph, every edge has two ends, so the degrees add up to twice the number of edges: Σ deg(v) = 2|E|. In graph G, 2 + 4 + 4 + 1 + 3 + 4 + 0 = 18 = 2 × 9 edges. The lab checks this for you.</div>
+
+  <h3>In-degree and out-degree</h3>
+  <div class="idea"><b>Definition.</b> In a directed graph, the <b>in-degree</b> <span class="e">deg<sup>−</sup>(v)</span> is the number of edges that end at v, and the <b>out-degree</b> <span class="e">deg<sup>+</sup>(v)</span> is the number of edges that start at v. <b>A loop adds 1 to both.</b></div>
+  <div class="idea"><b>Theorem 3.</b> In a graph with directed edges, <span class="e">Σ deg<sup>−</sup>(v) = Σ deg<sup>+</sup>(v) = |E|</span>. Each edge has exactly one start and one end, so both sums count every edge once.</div>
+  <p><b>Try it.</b> Press "Slide adjacency list (directed)" in the lab. It has 12 edges, so the in-degrees add up to 12 and so do the out-degrees.</p>
+</section>
+
+<section id="w8-special">
+  <h2>2. Special types of graphs</h2>
+  <ul>
+    <li><b>Complete graph</b> <span class="e">K<sub>n</sub></span>: n vertices with exactly one edge between each pair of different vertices.</li>
+    <li><b>Cycle</b> <span class="e">C<sub>n</sub></span> (n ≥ 3): vertices v<sub>1</sub>, …, v<sub>n</sub> and edges {v<sub>1</sub>, v<sub>2</sub>}, {v<sub>2</sub>, v<sub>3</sub>}, …, {v<sub>n−1</sub>, v<sub>n</sub>}, {v<sub>n</sub>, v<sub>1</sub>}.</li>
+    <li><b>Wheel</b> <span class="e">W<sub>n</sub></span> (n ≥ 3): a cycle C<sub>n</sub> plus one extra vertex joined to each of the n vertices.</li>
+    <li><b>Bipartite graph</b>: a simple graph whose vertices split into two disjoint sets V<sub>1</sub> and V<sub>2</sub> so that every edge joins a vertex of V<sub>1</sub> to a vertex of V<sub>2</sub>. Same thing: you can colour the vertices red and blue with no edge joining two vertices of the same colour.</li>
+    <li><b>Complete bipartite graph</b> <span class="e">K<sub>m,n</sub></span>: V<sub>1</sub> has m vertices, V<sub>2</sub> has n vertices, and every vertex of V<sub>1</sub> is joined to every vertex of V<sub>2</sub>.</li>
+    <li><b>Union</b> <span class="e">G<sub>1</sub> ∪ G<sub>2</sub></span>: the simple graph with vertex set V<sub>1</sub> ∪ V<sub>2</sub> and edge set E<sub>1</sub> ∪ E<sub>2</sub>.</li>
+  </ul>
+  <p><b>Slide example (bipartite).</b> To show a graph is <i>not</i> bipartite, try the colouring and find a clash. On the slide, colouring a red forces its neighbours f and b to be blue, but f and b are adjacent. Any triangle does this, so K<sub>3</sub> is not bipartite.</p>
+  <h3>Special graph drawer</h3>
+  <div class="card lab">
+    <label for="w8-sp-type">Graph</label>
+    <select id="w8-sp-type">
+      <option value="K">Complete graph Kₙ</option>
+      <option value="C">Cycle Cₙ</option>
+      <option value="W">Wheel Wₙ</option>
+      <option value="B">Complete bipartite Kₘ,ₙ</option>
+    </select>
+    <label for="w8-sp-n">n</label>
+    <input type="number" id="w8-sp-n" value="5" min="1" max="8" style="max-width:8ch">
+    <span id="w8-sp-mwrap" hidden><label for="w8-sp-m">m</label><input type="number" id="w8-sp-m" value="2" min="1" max="5" style="max-width:8ch"></span>
+    <div id="w8-sp-out"></div>
+  </div>
+  <div class="beyond">Beyond the slides: counting edges. K<sub>n</sub> has n(n − 1)/2 edges, C<sub>n</sub> has n, W<sub>n</sub> has 2n, and K<sub>m,n</sub> has mn. The drawer shows the count so you can check the formulas.</div>
+</section>
+
+<section id="w8-represent">
+  <h2>3. Representing graphs</h2>
+  <p><b>Big picture.</b> A computer cannot store a drawing, so we store the graph as a list or a table. You should be able to go from a drawing to each representation and back.</p>
+  <h3>Adjacency lists</h3>
+  <p>An <b>adjacency list</b> (for a graph with no multiple edges) lists, for each vertex, the vertices adjacent to it. For a directed graph, list each <b>initial vertex</b> with its <b>terminal vertices</b> (where its arrows go).</p>
+  <div class="tv-body">
+    <div class="scroll"><table><tr><th>Vertex</th><th class="l">Adjacent vertices</th></tr><tr><th>a</th><td class="l">b, c, e</td></tr><tr><th>b</th><td class="l">a</td></tr><tr><th>c</th><td class="l">a, d, e</td></tr><tr><th>d</th><td class="l">c, e</td></tr><tr><th>e</th><td class="l">a, c, d</td></tr></table></div>
+    <div class="scroll"><table><tr><th>Initial vertex</th><th class="l">Terminal vertices</th></tr><tr><th>a</th><td class="l">b, c, d, e</td></tr><tr><th>b</th><td class="l">b, d</td></tr><tr><th>c</th><td class="l">a, c, e</td></tr><tr><th>d</th><td class="l"></td></tr><tr><th>e</th><td class="l">b, c, d</td></tr></table></div>
+  </div>
+  <p class="small">Your slide tables. Press the two "Slide adjacency list" buttons in the lab to see the graphs they describe.</p>
+
+  <h3>Adjacency matrices</h3>
+  <div class="idea"><b>Definition.</b> List the vertices v<sub>1</sub>, …, v<sub>n</sub>. The <b>adjacency matrix</b> <span class="e">A<sub>G</sub> = [a<sub>ij</sub>]</span> of a simple graph is the n × n zero-one matrix with <span class="e">a<sub>ij</sub> = 1</span> if {v<sub>i</sub>, v<sub>j</sub>} is an edge and 0 otherwise.</div>
+  <ul>
+    <li>For a simple graph the matrix is <b>symmetric</b> (a<sub>ij</sub> = a<sub>ji</sub>) and the <b>diagonal is all 0</b> (no loops).</li>
+    <li>With <b>multiple edges</b>, a<sub>ij</sub> is the <b>number</b> of edges between v<sub>i</sub> and v<sub>j</sub>. A <b>loop</b> at v<sub>i</sub> puts a 1 at position (i, i) (more loops, a bigger number).</li>
+    <li>For a <b>directed</b> graph, a<sub>ij</sub> is the number of edges <b>from</b> v<sub>i</sub> <b>to</b> v<sub>j</sub>: row = start, column = end. It need not be symmetric.</li>
+    <li>The matrix depends on the order of the vertices. Use the order the question gives (often alphabetical).</li>
+  </ul>
+  <p><b>Slide example.</b> Press "Slide pseudograph matrix". With order a, b, c, d the matrix is [[0,3,0,2],[3,0,1,1],[0,1,1,2],[2,1,2,0]]: three edges between a and b, one loop at c.</p>
+  <div class="tip"><b>List or matrix?</b> (from your slides) A <b>sparse</b> graph (few edges compared with all possible edges) is stored more efficiently as an adjacency list. A <b>dense</b> graph (a high share of the possible edges) is better as an adjacency matrix.</div>
+
+  <h3>Incidence matrices</h3>
+  <div class="idea"><b>Definition.</b> For an undirected graph with vertices v<sub>1</sub>, …, v<sub>n</sub> and edges e<sub>1</sub>, …, e<sub>m</sub>, the <b>incidence matrix</b> is the n × m matrix <span class="e">M = [m<sub>ij</sub>]</span> with <span class="e">m<sub>ij</sub> = 1</span> when edge e<sub>j</sub> is incident with v<sub>i</sub>, and 0 otherwise.</div>
+  <p>Rows are vertices, columns are edges. Each column of a normal edge has exactly two 1s; a loop's column has a single 1; multiple edges give identical columns. The lab numbers the edges in the order you type them and shows the incidence matrix for undirected graphs.</p>
+</section>
+
+<section id="w8-connect">
+  <h2>4. Connectivity</h2>
+  <p><b>Big picture.</b> A path is a walk along edges from vertex to vertex. Connectivity asks: can you get from any vertex to any other?</p>
+  <div class="idea"><b>Definition.</b> A <b>path of length n</b> from u to v is a sequence of n edges e<sub>1</sub>, …, e<sub>n</sub> with vertices x<sub>0</sub> = u, x<sub>1</sub>, …, x<sub>n</sub> = v such that e<sub>i</sub> has endpoints x<sub>i−1</sub> and x<sub>i</sub>. In a simple graph we write the path as its vertex list x<sub>0</sub>, x<sub>1</sub>, …, x<sub>n</sub>.</div>
+  <ul>
+    <li>The <b>length</b> is the number of edges (one less than the number of vertices in the list).</li>
+    <li>A <b>circuit</b> begins and ends at the same vertex (u = v) and has length greater than 0.</li>
+    <li>A path or circuit is <b>simple</b> if it does not use the same edge more than once.</li>
+  </ul>
+  <p><b>Slide examples</b> (graph "Slide paths example"): a, d, c, f, e is a simple path of length 4; d, e, c, a is not a path because e and c are not adjacent; b, c, f, e, b is a circuit of length 4; a, b, e, d, a, b is a path of length 5 that is not simple (it uses {a, b} twice). Check them below.</p>
+  <h3>Path checker</h3>
+  <div class="card lab">
+    <label for="w8-pc-e">Edges of the graph (undirected)</label>
+    <input type="text" id="w8-pc-e" value="a-b, b-c, a-d, b-e, c-f, d-e, e-f, a-e, c-d, b-f" autocomplete="off" spellcheck="false">
+    <label for="w8-pc-p">Vertex sequence</label>
+    <input type="text" id="w8-pc-p" value="a, d, c, f, e" autocomplete="off" spellcheck="false">
+    <div class="togrow" role="group" aria-label="Slide path examples">
+      <button class="btn" type="button" data-w8path="a, d, c, f, e">a, d, c, f, e</button>
+      <button class="btn" type="button" data-w8path="d, e, c, a">d, e, c, a</button>
+      <button class="btn" type="button" data-w8path="b, c, f, e, b">b, c, f, e, b</button>
+      <button class="btn" type="button" data-w8path="a, b, e, d, a, b">a, b, e, d, a, b</button>
+    </div>
+    <div id="w8-pc-out" aria-live="polite"></div>
+  </div>
+  <h3>Connected components</h3>
+  <div class="idea"><b>Definition.</b> A graph is <b>connected</b> if there is a path between every pair of vertices. A <b>connected component</b> of G is a connected subgraph that is not a proper subgraph of another connected subgraph of G. A graph that is not connected has two or more components; they are disjoint and their union is G.</div>
+  <p>The lab at the top lists the components. "Slide graph G" has two: {a, b, c, d, e, f} and the lonely {g}.</p>
+</section>
+
+<section id="w8-shortest">
+  <h2>5. Shortest paths: Dijkstra's algorithm</h2>
+  <p><b>Big picture.</b> In a <b>weighted graph</b> each edge has a number (a distance, a cost, a time). A shortest-path algorithm finds the minimum total cost from a source vertex to the other vertices. Dijkstra's algorithm finds the shortest paths from the source to <b>all</b> the other vertices.</p>
+  <h3>The method by hand</h3>
+  <ol>
+    <li>Give the source distance 0 and every other vertex distance ∞.</li>
+    <li>Pick the unfinished vertex with the <b>smallest</b> distance and <b>finalise</b> it: its distance will not change again.</li>
+    <li>For each neighbour v of that vertex u that is not finalised, if <span class="e">dist(u) + w(u, v) &lt; dist(v)</span>, replace dist(v) and remember that the best way to v comes from u.</li>
+    <li>Repeat steps 2 and 3 until every vertex is finalised. Follow the "comes from" links backwards to read each path.</li>
+  </ol>
+  <div class="beyond">Beyond the slides: the slides give the problem and the answer; the steps above are the standard algorithm. It needs weights that are not negative, which is always the case in these questions.</div>
+  <p><b>Slide example.</b> The tool below starts with the slide graph (vertices 0 to 8, source 0). Your slide's answer is 0 4 12 19 21 11 9 8 14, for example 0 → 7 → 6 → 5 → 4 = 8 + 1 + 2 + 10 = 21. The edge from 3 to 4 has weight 9, which does not show in the slide's picture.</p>
+  <div class="card lab">
+    <label for="w8-dj-e">Weighted edges</label>
+    <input type="text" id="w8-dj-e" value="0-1:4, 0-7:8, 1-2:8, 1-7:11, 2-3:7, 2-8:2, 2-5:4, 3-4:9, 3-5:14, 4-5:10, 5-6:2, 6-7:1, 6-8:6, 7-8:7" autocomplete="off" spellcheck="false">
+    <label for="w8-dj-s">Start vertex</label>
+    <input type="text" id="w8-dj-s" value="0" autocomplete="off" spellcheck="false" style="max-width:8ch">
+    <div id="w8-dj-out"></div>
+  </div>
+  <div class="tip"><b>Exam tip.</b> Write the table: one row per step, one column per vertex, and circle the vertex you finalise in each row. Markers want to see the distances change, not just the final answer.</div>
+</section>
+
+<section id="w8-mistakes">
+  <h2>6. Common mistakes</h2>
+  <ul>
+    <li>Counting a loop as 1 in an undirected degree. It counts 2. (In a directed graph a loop adds 1 to in-degree and 1 to out-degree.)</li>
+    <li>Mixing up in-degree and out-degree. In = arrows arriving, out = arrows leaving.</li>
+    <li>Writing a 1 instead of the number of edges in the adjacency matrix of a multigraph.</li>
+    <li>Writing a 2 on the diagonal for one loop. In the adjacency matrix a single loop is a 1.</li>
+    <li>Reading a directed adjacency matrix the wrong way round. Row = start of the arrow, column = end.</li>
+    <li>Using a different vertex order from the question. Keep the order you are given.</li>
+    <li>Calling a path's length the number of vertices. Length = number of edges.</li>
+    <li>In Dijkstra, finalising a vertex that is not the smallest, or forgetting to update a neighbour when a shorter route appears.</li>
+    <li>Calling a graph bipartite without showing the two sets, or calling it not bipartite without pointing to the clash.</li>
+  </ul>
+  <p><b>Connections.</b> A directed graph is the digraph of a relation from Week 5, and the adjacency matrix of a simple directed graph is the relation's zero-one matrix. The neighbourhood N(A) is a union of sets, and Dijkstra is a greedy algorithm like those in Week 3: it always takes the closest unfinished vertex.</p>
+</section>
+
+<section id="w8-recall">
+  <h2>7. Active recall</h2>
+  <p>Answer from memory in the box, then check. The check button unlocks once you have typed something.</p>
+  <div id="w8-recall-list"></div>
+</section>
+
+<section id="w8-practice">
+  <h2>8. Practice set</h2>
+  <p>Three easy, four medium, three challenging. Most are your Tutorial 5 questions. Write your attempt first. Hints come in three levels, and the solution unlocks only after you have written an attempt. You can check an answer by typing the edges into the graph lab or the Dijkstra tool, but work it out yourself first.</p>
+  <div id="w8-practice-list"></div>
+</section>
+
+<section id="w8-checkpoint">
+  <h2>9. Weekly checkpoint</h2>
+  <p>Rate how you feel about each objective, then build your checkpoint.</p>
+  <div class="card">
+    <div class="objs" id="w8-objs"></div>
+    <button class="btn primary" type="button" id="w8-cp-build">Build my checkpoint</button>
+    <button class="btn" type="button" id="w8-cp-reset">Clear all my work</button>
+    <div id="w8-cp-out" aria-live="polite"></div>
+  </div>
+</section>
+
+</div>
+
 <div class="week w6" data-week="6" id="week6" role="tabpanel" hidden>
 <section class="hero" id="w6-top">
   <h1>Practice until the pattern is automatic.</h1>
@@ -1219,7 +1447,7 @@ j := n {j is the right endpoint of the interval}
 
 <section id="w6-graphs">
   <h2>2. Graph basics and tools</h2>
-  <div class="beyond">Beyond your slides: the Chapter 1 to 3 slides you sent me do not cover graphs, but your tutorial and coursework sheets do. This section follows those questions and the standard definitions, so check it against your lecturer's notes.</div>
+  <p>For the full lessons on graphs (Chapter 4), open <a href="#week8" data-open-week="8">Week 6 · Graphs</a>. This is a quick summary with the two tools.</p>
   <ul>
     <li>A <b>graph</b> has vertices and edges. In a <b>directed graph</b> each edge is an arrow from one vertex to another. A <b>multigraph</b> allows several edges between the same two vertices, and a <b>loop</b> is an edge from a vertex to itself.</li>
     <li><b>Undirected degree:</b> the number of edge ends at the vertex, so a loop counts 2. The degrees add up to 2 × (number of edges).</li>
@@ -1348,8 +1576,8 @@ j := n {j is the right endpoint of the interval}
 </main>
 </div>
 <footer class="sitefoot"><span>CKC111 Discrete Structures · unofficial study aid</span><a class="ig-credit" href="https://www.instagram.com/baswara.hm/" target="_blank" rel="noopener"><svg class="ig-ic" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/></svg> Made by @baswara.hm</a></footer>
-<script src="script.js?v=20261028d"></script>
-<script src="../updates.js?v=20261030a" data-course="discrete-structures"></script>
-<script src="../online.js?v=20261030b" data-course="discrete-structures"></script>
+<script src="script.js?v=20261101a"></script>
+<script src="../updates.js?v=20261101a" data-course="discrete-structures"></script>
+<script src="../online.js?v=20261101a" data-course="discrete-structures"></script>
 </body>
 </html>

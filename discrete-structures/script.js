@@ -1412,6 +1412,133 @@ var W5={
  ]
 };
 
+/* ===================== WEEK 6 (GRAPHS) TOOLS ===================== */
+/* internal week number 8: ids start with w8- */
+var W8_PRESETS={
+  G:{e:"a-b, a-f, b-c, b-f, b-e, c-f, c-e, c-d, e-f",v:"g"},
+  H:{e:"a-b, a-d, a-e, a-e, b-b, b-c, b-d, b-e, d-e, d-e, d-e"},
+  list1:{e:"a-b, a-c, a-e, c-d, c-e, d-e"},
+  list2:{e:"a-b, a-c, a-d, a-e, b-b, b-d, c-a, c-c, c-e, e-b, e-c, e-d",dir:true},
+  pseudo:{e:"a-b, a-b, a-b, a-d, a-d, b-c, b-d, c-c, c-d, c-d"},
+  paths:{e:"a-b, b-c, a-d, b-e, c-f, d-e, e-f, a-e, c-d, b-f"}
+};
+function specialGraph(type,n,m){
+  var V=[],E=[],pos={},W=340,H=300,i,j;
+  function circ(list,cx,cy,r){list.forEach(function(v,k){var a=-Math.PI/2+2*Math.PI*k/list.length;pos[v]={x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)};});}
+  if(type==="B"){
+    var A=[],B=[];for(i=1;i<=m;i++)A.push("u"+i);for(i=1;i<=n;i++)B.push("v"+i);V=A.concat(B);
+    A.forEach(function(a){B.forEach(function(b){E.push([a,b]);});});
+    A.forEach(function(v,k){pos[v]={x:90,y:H/2+(k-(A.length-1)/2)*48};});
+    B.forEach(function(v,k){pos[v]={x:250,y:H/2+(k-(B.length-1)/2)*36};});
+  }else{
+    for(i=1;i<=n;i++)V.push("v"+i);
+    circ(V,W/2,H/2,112);
+    if(type==="K"){for(i=0;i<n;i++)for(j=i+1;j<n;j++)E.push([V[i],V[j]]);}
+    else{for(i=0;i<n;i++)E.push([V[i],V[(i+1)%n]]);}
+    if(type==="W"){V.forEach(function(v){E.push(["hub",v]);});V.push("hub");pos.hub={x:W/2,y:H/2};}
+  }
+  var h='<svg class="dg" viewBox="0 0 '+W+" "+H+'" role="img" aria-label="Special graph">';
+  E.forEach(function(e){var a=pos[e[0]],b=pos[e[1]];h+='<line x1="'+f1(a.x)+'" y1="'+f1(a.y)+'" x2="'+f1(b.x)+'" y2="'+f1(b.y)+'" class="dg-edge"/>';});
+  V.forEach(function(v){var p=pos[v];h+='<circle cx="'+f1(p.x)+'" cy="'+f1(p.y)+'" r="15" class="dg-node"/><text x="'+f1(p.x)+'" y="'+f1(p.y+4)+'" text-anchor="middle" class="dg-label" style="font-size:11px">'+v+"</text>";});
+  return {V:V,E:E,svg:h+"</svg>"};
+}
+function initWeek6G(){
+  initGraphLab("w8-",{full:true,presets:W8_PRESETS});
+  initDijkstraTool("w8-");
+
+  /* special graph drawer */
+  function renderSp(){
+    var t=$("w8-sp-type").value,n=parseInt($("w8-sp-n").value,10),m=parseInt($("w8-sp-m").value,10),out=$("w8-sp-out");
+    $("w8-sp-mwrap").hidden=t!=="B";
+    var lo=(t==="C"||t==="W")?3:1,hi=t==="B"?5:8;
+    if(!(n>=lo&&n<=hi)){out.innerHTML='<div class="err">Choose n from '+lo+" to "+hi+(t==="C"||t==="W"?" (a cycle or wheel needs n ≥ 3)":"")+".</div>";return;}
+    if(t==="B"&&!(m>=1&&m<=5)){out.innerHTML='<div class="err">Choose m from 1 to 5.</div>';return;}
+    var g=specialGraph(t,n,m),name={K:"K<sub>"+n+"</sub>",C:"C<sub>"+n+"</sub>",W:"W<sub>"+n+"</sub>",B:"K<sub>"+m+","+n+"</sub>"}[t];
+    var deg={K:"every vertex has degree "+(n-1),C:"every vertex has degree 2",W:"the hub has degree "+n+", the others degree 3",B:"the m side has degree "+n+", the n side degree "+m}[t];
+    var bip={K:n<=2?"bipartite":"not bipartite (it contains a triangle)",C:n%2===0?"bipartite (colour the vertices alternately)":"not bipartite (an odd cycle cannot be coloured alternately)",W:"not bipartite (the hub and two neighbouring rim vertices form a triangle)",B:"bipartite, with V<sub>1</sub> = the u's and V<sub>2</sub> = the v's"}[t];
+    out.innerHTML='<div class="tv-body"><div>'+g.svg+"</div><div><p><b>"+name+"</b>: "+g.V.length+" vertices and "+g.E.length+" edges.</p><p>Degrees: "+deg+".</p><p>It is "+bip+".</p></div></div>";
+  }
+  ["w8-sp-type","w8-sp-n","w8-sp-m"].forEach(function(id){$(id).addEventListener("input",renderSp);$(id).addEventListener("change",renderSp);});
+  renderSp();
+
+  /* path checker */
+  function renderPc(){
+    var out=$("w8-pc-out");
+    try{
+      var E=parseEdgeList($("w8-pc-e").value),seq=$("w8-pc-p").value.split(/[\s,]+/).filter(Boolean),cnt={},used={},i;
+      E.forEach(function(e){var k=[e[0],e[1]].sort().join("\u0001");cnt[k]=(cnt[k]||0)+1;});
+      if(seq.length<2)throw new Error("Type at least two vertices, separated by commas.");
+      var simple=true,rep=null;
+      for(i=1;i<seq.length;i++){
+        var k=[seq[i-1],seq[i]].sort().join("\u0001");
+        if(!cnt[k]){out.innerHTML='<div class="fb ask"><b>Not a path.</b> '+esc(seq[i-1])+" and "+esc(seq[i])+" are not adjacent (there is no edge {"+esc(seq[i-1])+", "+esc(seq[i])+"}).</div>";return;}
+        used[k]=(used[k]||0)+1;if(used[k]>cnt[k]&&simple){simple=false;rep="{"+seq[i-1]+", "+seq[i]+"}";}
+      }
+      var len=seq.length-1,circuit=seq[0]===seq[seq.length-1];
+      var h="<b>A path of length "+len+"</b> ("+seq.length+" vertices, "+len+" edges). ";
+      h+=circuit?"It starts and ends at "+esc(seq[0])+", so it is a <b>circuit</b>. ":"It is not a circuit (it ends at a different vertex). ";
+      h+=simple?"No edge is used twice, so it is <b>simple</b>.":"The edge "+esc(rep)+" is used more than once, so it is <b>not simple</b>.";
+      out.innerHTML='<div class="fb ok">'+h+"</div>";
+    }catch(e){out.innerHTML='<div class="err">'+esc(e.message)+"</div>";}
+  }
+  ["w8-pc-e","w8-pc-p"].forEach(function(id){$(id).addEventListener("input",renderPc);});
+  Array.prototype.forEach.call(document.querySelectorAll("[data-w8path]"),function(b){b.addEventListener("click",function(){$("w8-pc-p").value=b.getAttribute("data-w8path");renderPc();});});
+  renderPc();
+}
+
+/* ===================== WEEK 6 (GRAPHS) CONTENT ===================== */
+function gfig(edges,dir){
+  var E=parseEdgeList(edges),V=uniq([].concat.apply([],E)).sort();
+  return '<div class="mfig">'+multiSvg(V,E,dir,"w8-fig")+'</div><p class="small">Edges: '+esc(edges.replace(/>/g,"→"))+'. (The same graph as on the tutorial sheet, drawn in a circle.)</p>';
+}
+var W8={
+ key:"ckc111-week6",
+ objectives:["Naming the type of a graph: simple, multigraph, pseudograph, directed","Finding degrees, neighbourhoods, in-degrees and out-degrees","Recognising Kn, Cn, Wn, bipartite graphs and Km,n","Writing adjacency lists, adjacency matrices and incidence matrices","Reading paths, circuits and connected components","Finding shortest paths with Dijkstra's algorithm"],
+ recall:[
+  ["Define a graph G = (V, E).","A nonempty set V of vertices (nodes) and a set E of edges. Each edge has one or two vertices associated with it, called its endpoints."],
+  ["What is the difference between a simple graph, a multigraph and a pseudograph?","Simple: no multiple edges and no loops. Multigraph: multiple edges allowed, no loops. Pseudograph: multiple edges and loops allowed."],
+  ["What is deg(v) in an undirected graph, and how does a loop count?","The number of edges incident with v. A loop counts two."],
+  ["Define in-degree and out-degree. How does a loop count?","deg−(v) = number of edges ending at v; deg+(v) = number of edges starting at v. A loop adds 1 to each."],
+  ["State Theorem 3 about directed graphs.","The sum of all in-degrees equals the sum of all out-degrees, and both equal the number of edges |E|."],
+  ["When is a simple graph bipartite? Give the colouring version.","When V splits into two disjoint sets V1 and V2 so that every edge joins V1 to V2. Equivalently, the vertices can be coloured red and blue with no edge joining two vertices of the same colour."],
+  ["What does entry a_ij of an adjacency matrix hold, and what does a simple graph's matrix look like?","The number of edges between v_i and v_j (from v_i to v_j if directed). For a simple graph it is a symmetric zero-one matrix with 0s on the diagonal."],
+  ["Define a circuit and a simple path.","A circuit is a path that begins and ends at the same vertex and has length greater than zero. A path or circuit is simple if it does not use the same edge more than once."],
+  ["What does Dijkstra's algorithm find, and which vertex does it finalise at each step?","The shortest paths from a source vertex to all the other vertices of a weighted graph. At each step it finalises the unfinished vertex with the smallest current distance, then updates that vertex's neighbours."]
+ ],
+ practice:[
+  {l:"Easy",q:'Tutorial 5, Question 2(a). Use an adjacency list to represent the graph.'+gfig("a-b, a-c, a-d, b-d, c-d"),
+   h:["Go through the vertices in order. For each one, write every vertex joined to it by an edge.","Start with a: it is joined to b, to c and (by the diagonal) to d.","Every edge appears twice in an undirected list: {a, b} puts b in a's list and a in b's list."],
+   s:'<pre>Vertex | Adjacent vertices\n  a    | b, c, d\n  b    | a, d\n  c    | a, d\n  d    | a, b, c</pre>'},
+  {l:"Easy",q:'Tutorial 5, Question 2(b). Use an adjacency list to represent the graph.'+gfig("a-b, a-d, b-d, b-e, c-d, c-e"),
+   h:["List the vertices a, b, c, d, e and go one at a time.","b has three neighbours: a, d and e. c has two.","Check: the lists together should contain each of the 6 edges twice, so 12 entries in total."],
+   s:'<pre>Vertex | Adjacent vertices\n  a    | b, d\n  b    | a, d, e\n  c    | d, e\n  d    | a, b, c\n  e    | b, c</pre>Total entries: 2 + 3 + 2 + 3 + 2 = 12 = 2 × 6 edges.'},
+  {l:"Easy",q:'Tutorial 5, Question 3(a). Represent the graph using an adjacency matrix (vertex order a, b, c, d). Note the two edges between b and d.'+gfig("a-c, b-c, c-d, b-d, b-d"),
+   h:["Make a 4 × 4 table with rows and columns a, b, c, d.","Entry (i, j) is the number of edges between vertex i and vertex j. There is no loop, so the diagonal is 0.","b and d are joined by two edges, so the entries (b, d) and (d, b) are 2. The matrix must be symmetric."],
+   s:'<pre>    a b c d\na [ 0 0 1 0 ]\nb [ 0 0 1 2 ]\nc [ 1 1 0 1 ]\nd [ 0 2 1 0 ]</pre>It is a multigraph, so the entry 2 records the multiple edge. The matrix is symmetric because the graph is undirected.'},
+  {l:"Medium",q:'Tutorial 5, Question 1(a). For this directed multigraph: (I) find the in-degree and out-degree of each vertex; (II) determine the sum of the degrees of the vertices.'+gfig("a>a, b>a, d>a, d>b, b>c, d>c, c>d",true),
+   h:["For each arrow, add 1 to the out-degree of its start and 1 to the in-degree of its end.","The loop at a adds 1 to deg−(a) and 1 to deg+(a).","Check with Theorem 3: the in-degrees and the out-degrees must both add up to the number of edges."],
+   s:'<pre>vertex | in deg−  out deg+\n  a    |   3        1\n  b    |   1        2\n  c    |   2        1\n  d    |   1        3</pre>(II) Sum of in-degrees = 3 + 1 + 2 + 1 = 7 and sum of out-degrees = 1 + 2 + 1 + 3 = 7, both equal to the 7 edges (Theorem 3). Adding in- and out-degrees together gives 14 = 2 × 7.'},
+  {l:"Medium",q:'Tutorial 5, Question 1(b). For this directed multigraph: (I) find the in-degree and out-degree of each vertex; (II) determine the sum of the degrees of the vertices.'+gfig("b>a, a>b, a>b, b>b, b>c, b>c, c>a, d>d",true),
+   h:["Count the edges between a and b carefully: two go from a to b and one goes from b to a.","There are loops at b and d. Each loop adds 1 to the in-degree and 1 to the out-degree.","d has only its loop, so deg−(d) = deg+(d) = 1."],
+   s:'<pre>vertex | in deg−  out deg+\n  a    |   2        2\n  b    |   3        4\n  c    |   2        1\n  d    |   1        1</pre>(II) Sum of in-degrees = 8 = sum of out-degrees = number of edges (8). In and out together: 16 = 2 × 8.'},
+  {l:"Medium",q:'Tutorial 5, Question 3(b). Represent the graph using an adjacency matrix (vertex order a, b, c, d).'+gfig("a-b, a-b, a-b, a-d, b-c, c-d, c-d, c-d"),
+   h:["Count the edges between each pair. a and b are joined by three edges, and so are c and d.","The two crossing lines are a–d and b–c.","Fill in both (i, j) and (j, i): the matrix is symmetric. No loops, so the diagonal is 0."],
+   s:'<pre>    a b c d\na [ 0 3 0 1 ]\nb [ 3 0 1 0 ]\nc [ 0 1 0 3 ]\nd [ 1 0 3 0 ]</pre>Check: each row adds up to the degree of its vertex (4, 4, 4, 4), and 16 = 2 × 8 edges.'},
+  {l:"Medium",q:'Tutorial 5, Question 5. Find the adjacency matrix of each directed multigraph with the vertices in alphabetical order.<br>(a)'+gfig("a>b, b>b, b>c, c>b, c>c, c>d, d>a",true)+'(b)'+gfig("a>a, a>b, a>c, c>a, a>d, d>a, b>b, b>d, d>b, c>c, d>c, d>d",true),
+   h:["Row = start of the arrow, column = end. Entry (i, j) is the number of arrows from i to j.","A loop at a vertex puts a 1 on the diagonal in that vertex's row.","Check each row: it should add up to the out-degree of that vertex."],
+   s:'<pre>(a)     a b c d        (b)     a b c d\n    a [ 0 1 0 0 ]          a [ 1 1 1 1 ]\n    b [ 0 1 1 0 ]          b [ 0 1 0 1 ]\n    c [ 0 1 1 1 ]          c [ 1 0 1 0 ]\n    d [ 1 0 0 0 ]          d [ 1 1 1 1 ]</pre>Neither matrix is symmetric, because the graphs are directed (in (a), b → c and c → b both exist, but a → b has no return arrow).'},
+  {l:"Challenging",q:'Tutorial 5, Question 4. Find the shortest paths from A to every other vertex using Dijkstra\'s algorithm. The weighted edges are: A–B 2, A–F 4, A–C 9, B–C 5, B–E 7, B–F 6, C–F 5, C–D 4, C–G 6, E–F 1.',
+   h:["Start: dist(A) = 0, all others ∞. Finalise A and update its neighbours B, F, C.","After A: B = 2, F = 4, C = 9. The smallest is B. From B, the route to C costs 2 + 5 = 7 < 9, so C improves.","Then finalise F (4): E becomes 4 + 1 = 5, better than 2 + 7 = 9 through B. Keep going until all seven are finalised."],
+   s:'<pre>Step | finalise |  A   B   C   D   E   F   G\n  1  |    A     |  0   2   9   ∞   ∞   4   ∞\n  2  |    B     |  0   2   7   ∞   9   4   ∞\n  3  |    F     |  0   2   7   ∞   5   4   ∞\n  4  |    E     |  0   2   7   ∞   5   4   ∞\n  5  |    C     |  0   2   7  11   5   4  13\n  6  |    D     |  0   2   7  11   5   4  13\n  7  |    G     |  0   2   7  11   5   4  13</pre>Shortest paths from A: B = 2 (A–B), F = 4 (A–F), E = 5 (A–F–E), C = 7 (A–B–C), D = 11 (A–B–C–D), G = 13 (A–B–C–G).'},
+  {l:"Challenging",q:'Special graphs. (a) How many vertices and edges do K<sub>5</sub>, C<sub>6</sub>, W<sub>5</sub> and K<sub>2,3</sub> have? (b) Which of the four are bipartite? For each one that is, give V<sub>1</sub> and V<sub>2</sub>; for each one that is not, point to the problem.',
+   h:["K5: every pair of the 5 vertices is joined. How many pairs are there? W5 is C5 plus a hub with 5 spokes.","Bipartite means you can colour red/blue with no edge joining two of the same colour. A triangle (three vertices all joined) can never be coloured like that.","Around a cycle the colours must alternate. That works only if the cycle has an even number of vertices."],
+   s:'(a) K<sub>5</sub>: 5 vertices, 10 edges (5 × 4 / 2). C<sub>6</sub>: 6 vertices, 6 edges. W<sub>5</sub>: 6 vertices, 10 edges (5 on the rim, 5 spokes). K<sub>2,3</sub>: 5 vertices, 6 edges (2 × 3).<br>(b) K<sub>5</sub>: not bipartite, any three vertices form a triangle. C<sub>6</sub>: bipartite, V<sub>1</sub> = {v1, v3, v5}, V<sub>2</sub> = {v2, v4, v6}. W<sub>5</sub>: not bipartite, the hub and two neighbouring rim vertices form a triangle. K<sub>2,3</sub>: bipartite by definition, V<sub>1</sub> = the 2 vertices, V<sub>2</sub> = the 3 vertices. (Check with the special graph drawer.)'},
+  {l:"Challenging",q:'Proof construction (beyond the slides). Show that in every undirected graph the number of vertices of <b>odd</b> degree is even. Use the handshaking theorem Σ deg(v) = 2|E|.',
+   h:["Split the vertices into two groups: those with even degree and those with odd degree. Write Σ deg(v) as the sum over the even group plus the sum over the odd group.","The total is 2|E|, which is even. The even group's sum is even (a sum of even numbers). What does that force for the odd group's sum?","A sum of k odd numbers is even exactly when k is even."],
+   s:'Let V<sub>e</sub> be the vertices of even degree and V<sub>o</sub> those of odd degree. Then 2|E| = Σ<sub>v∈V<sub>e</sub></sub> deg(v) + Σ<sub>v∈V<sub>o</sub></sub> deg(v). The left side is even, and the first sum is even because every term is even. So the second sum is even too. It is a sum of |V<sub>o</sub>| odd numbers, and a sum of odd numbers is even only when there is an even number of them. Hence |V<sub>o</sub>| is even. ∎ (Example: in slide graph G the odd degrees are deg(d) = 1 and deg(e) = 3: two vertices.)'}
+ ]
+};
+
 /* ===================== WEEK 2 (uses the logic engine exposed by Week 1) ===================== */
 function initWeek2(){
   var L=window.CKCLogic;
@@ -2506,46 +2633,90 @@ function parseEdgeList(str){
   if(rest.length)throw new Error('I could not read "'+rest.slice(0,10)+'". Write edges like a-b, b-c, c-c.');
   return out;
 }
-function initGraphLab(){
+/* facts about an edge list: degrees, lists, matrices, type, components, bipartite */
+function graphFacts(V,E,dir){
+  var idx={},M=V.map(function(){return V.map(function(){return 0;});}),L={},deg={},inn={},outd={},N={},seen={},loops=0,multi=false;
+  V.forEach(function(v,i){idx[v]=i;L[v]=[];deg[v]=0;inn[v]=0;outd[v]=0;N[v]=[];});
+  E.forEach(function(e){
+    var u=e[0],v=e[1],k=dir?u+"\u0001"+v:[u,v].sort().join("\u0001");
+    if(seen[k])multi=true;seen[k]=1;
+    if(u===v)loops++;
+    if(dir){M[idx[u]][idx[v]]++;L[u].push(v);outd[u]++;inn[v]++;}
+    else if(u===v){M[idx[u]][idx[u]]++;L[u].push(u);deg[u]+=2;}
+    else{M[idx[u]][idx[v]]++;M[idx[v]][idx[u]]++;L[u].push(v);L[v].push(u);deg[u]++;deg[v]++;}
+    if(N[u].indexOf(v)<0)N[u].push(v);if(N[v].indexOf(u)<0)N[v].push(u);
+  });
+  var type=dir?(loops||multi?"directed multigraph":"simple directed graph"):(loops?"pseudograph":multi?"multigraph":"simple graph");
+  /* connected components (directions ignored) */
+  var comp={},comps=[];
+  V.forEach(function(s){
+    if(comp[s]!==undefined)return;
+    var c=[s],q=[s];comp[s]=comps.length;
+    while(q.length){var x=q.shift();N[x].forEach(function(y){if(comp[y]===undefined){comp[y]=comps.length;c.push(y);q.push(y);}});}
+    comps.push(c);
+  });
+  /* bipartite: try to colour red / blue */
+  var col={},bip=!loops,clash=null;
+  V.forEach(function(s){
+    if(col[s]!==undefined||!bip)return;
+    col[s]=0;var q=[s];
+    while(q.length&&bip){var x=q.shift();N[x].forEach(function(y){if(y===x)return;if(col[y]===undefined){col[y]=1-col[x];q.push(y);}else if(col[y]===col[x]){bip=false;clash=[x,y];}});}
+  });
+  return {idx:idx,M:M,L:L,deg:deg,inn:inn,outd:outd,N:N,type:type,loops:loops,multi:multi,comps:comps,bip:bip,clash:clash,
+    V1:V.filter(function(v){return col[v]===0;}),V2:V.filter(function(v){return col[v]===1;})};
+}
+function incidenceMatrix(V,E){return V.map(function(v){return E.map(function(e){return (e[0]===v||e[1]===v)?1:0;});});}
+
+/* Graph lab. P is the id prefix ("w6-" in the Exam Lab, "w8-" in Week 6). opts.full adds neighbourhoods, components,
+   bipartite and the incidence matrix; opts.presets fills the boxes from buttons with data-gl-preset. */
+function initGraphLab(P,opts){
+  opts=opts||{};
   function render(){
-    var out=$("w6-gl-out");
+    var out=$(P+"gl-out");
     try{
-      var dir=$("w6-gl-dir").checked,E=parseEdgeList($("w6-gl-e").value),V=uniq(parseElems($("w6-gl-v").value).concat([].concat.apply([],E)));
+      var dir=$(P+"gl-dir").checked,E=parseEdgeList($(P+"gl-e").value),V=uniq([].concat.apply([],E).concat(parseElems($(P+"gl-v").value))).sort();
       if(!V.length)throw new Error("Type some edges first.");
-      if(V.length>8)throw new Error("Please use at most 8 vertices.");
-      var idx={},M=V.map(function(){return V.map(function(){return 0;});}),L={},deg={},inn={},outd={};
-      V.forEach(function(v,i){idx[v]=i;L[v]=[];deg[v]=0;inn[v]=0;outd[v]=0;});
-      E.forEach(function(e){
-        var u=e[0],v=e[1];
-        if(dir){M[idx[u]][idx[v]]++;L[u].push(v);outd[u]++;inn[v]++;}
-        else if(u===v){M[idx[u]][idx[u]]++;L[u].push(u);deg[u]+=2;}
-        else{M[idx[u]][idx[v]]++;M[idx[v]][idx[u]]++;L[u].push(v);L[v].push(u);deg[u]++;deg[v]++;}
-      });
-      var h='<div class="tv-body"><div>'+multiSvg(V,E,dir,"w6-gl-arrow")+"</div><div>";
-      h+='<div class="scroll"><table><tr><th>vertex</th>'+(dir?"<th>in</th><th>out</th>":"<th>degree</th>")+"</tr>"+V.map(function(v){return "<tr><th>"+esc(v)+"</th>"+(dir?"<td>"+inn[v]+"</td><td>"+outd[v]+"</td>":"<td>"+deg[v]+"</td>")+"</tr>";}).join("")+"</table></div>";
-      var sumD=V.reduce(function(a,v){return a+(dir?inn[v]:deg[v]);},0);
+      if(V.length>10)throw new Error("Please use at most 10 vertices.");
+      var F=graphFacts(V,E,dir);
+      var h='<div class="tv-body"><div>'+multiSvg(V,E,dir,P+"gl-arrow")+"</div><div>";
+      if(opts.full)h+='<p style="margin-top:0"><b>Type:</b> '+F.type+".</p>";
+      h+='<div class="scroll"><table><tr><th>vertex</th>'+(dir?"<th>in deg<sup>−</sup></th><th>out deg<sup>+</sup></th>":"<th>degree</th>")+(opts.full&&!dir?'<th class="l">N(v)</th>':"")+"</tr>"+V.map(function(v){
+        var nb=F.N[v].slice().sort();
+        return "<tr><th>"+esc(v)+"</th>"+(dir?"<td>"+F.inn[v]+"</td><td>"+F.outd[v]+"</td>":"<td>"+F.deg[v]+"</td>")+(opts.full&&!dir?'<td class="l">'+(nb.length?"{"+nb.map(esc).join(", ")+"}":"∅")+"</td>":"")+"</tr>";}).join("")+"</table></div>";
+      var sumD=V.reduce(function(a,v){return a+(dir?F.inn[v]:F.deg[v]);},0);
       h+='<p class="small">'+(dir?"Sum of in-degrees = sum of out-degrees = number of edges = "+E.length+".":"Sum of degrees = "+sumD+" = 2 × "+E.length+" edges.")+"</p></div></div>";
-      h+="<h3 class=\"tv-h\">Adjacency list</h3><pre class=\"code\">"+V.map(function(v){return esc(v)+": "+(L[v].length?L[v].join(", "):"(none)");}).join("\n")+"</pre>";
-      h+="<h3 class=\"tv-h\">Adjacency matrix</h3>"+matTable(M,V,V,"A");
+      if(opts.full){
+        h+='<p><b>Connected components'+(dir?" (directions ignored)":"")+':</b> '+F.comps.length+" — "+F.comps.map(function(c){return "{"+c.map(esc).join(", ")+"}";}).join(", ")+". "+(F.comps.length===1?"The graph is connected.":"The graph is not connected.")+"</p>";
+        if(!dir)h+="<p><b>Bipartite:</b> "+(F.loops?"no, a loop joins a vertex to itself.":F.bip?"yes, V<sub>1</sub> = {"+F.V1.map(esc).join(", ")+"} and V<sub>2</sub> = {"+F.V2.map(esc).join(", ")+"}. Every edge goes between them.":"no. Colouring the vertices red and blue fails: "+esc(F.clash[0])+" and "+esc(F.clash[1])+" are adjacent but must get the same colour.")+"</p>";
+      }
+      h+="<h3 class=\"tv-h\">Adjacency list</h3><pre class=\"code\">"+V.map(function(v){return esc(v)+": "+(F.L[v].length?F.L[v].join(", "):"(none)");}).join("\n")+"</pre>";
+      h+="<h3 class=\"tv-h\">Adjacency matrix</h3>"+matTable(F.M,V,V,"A");
+      if(opts.full&&!dir&&E.length&&E.length<=14){
+        var en=E.map(function(_,i){return "e"+(i+1);});
+        h+='<h3 class="tv-h">Incidence matrix</h3><p class="small">'+E.map(function(e,i){return en[i]+" = {"+esc(e[0])+", "+esc(e[1])+"}";}).join(", ")+"</p>"+matTable(incidenceMatrix(V,E),V,en,"M");
+      }
       out.innerHTML=h;
     }catch(e){out.innerHTML='<div class="err">'+esc(e.message)+"</div>";}
   }
-  ["w6-gl-v","w6-gl-e"].forEach(function(id){$(id).addEventListener("input",render);});
-  $("w6-gl-dir").addEventListener("change",render);
+  [P+"gl-v",P+"gl-e"].forEach(function(id){$(id).addEventListener("input",render);});
+  $(P+"gl-dir").addEventListener("change",render);
+  if(opts.presets)Array.prototype.forEach.call(document.querySelectorAll("[data-gl-preset^='"+P+"']"),function(b){
+    b.addEventListener("click",function(){var p=opts.presets[b.getAttribute("data-gl-preset").slice(P.length)];$(P+"gl-e").value=p.e;$(P+"gl-v").value=p.v||"";$(P+"gl-dir").checked=!!p.dir;render();});
+  });
   render();
 }
-function initDijkstraTool(){
+function initDijkstraTool(P,presets){
   function render(){
-    var out=$("w6-dj-out");
+    var out=$(P+"dj-out");
     try{
-      var str=$("w6-dj-e").value,re=/([A-Za-z0-9]+)\s*-\s*([A-Za-z0-9]+)\s*:\s*(\d+)/g,m,E=[],V=[];
+      var str=$(P+"dj-e").value,re=/([A-Za-z0-9]+)\s*-\s*([A-Za-z0-9]+)\s*:\s*(\d+)/g,m,E=[],V=[];
       while((m=re.exec(str))){E.push({a:m[1],b:m[2],w:parseInt(m[3],10)});V.push(m[1],m[2]);}
       var rest=str.replace(re,"").replace(/[\s,;]/g,"");
       if(rest.length)throw new Error('I could not read "'+rest.slice(0,10)+'". Write weighted edges like A-B:4, B-C:2.');
       V=uniq(V).sort();
       if(!E.length)throw new Error("Type some weighted edges first.");
-      if(V.length>8)throw new Error("Please use at most 8 vertices.");
-      var src=$("w6-dj-s").value.trim()||V[0];
+      if(V.length>10)throw new Error("Please use at most 10 vertices.");
+      var src=$(P+"dj-s").value.trim()||V[0];
       if(V.indexOf(src)<0)throw new Error('The start vertex "'+src+'" is not in the graph.');
       var res=dijkstra(V,E,src);
       var h='<div class="tv-body"><div>'+weightedSvg(V,E)+'</div><div><div class="scroll"><table><tr><th>vertex</th><th>shortest distance</th><th>path</th></tr>'+V.map(function(v){
@@ -2562,12 +2733,15 @@ function initDijkstraTool(){
       out.innerHTML=h;
     }catch(e){out.innerHTML='<div class="err">'+esc(e.message)+"</div>";}
   }
-  ["w6-dj-e","w6-dj-s"].forEach(function(id){$(id).addEventListener("input",render);});
+  [P+"dj-e",P+"dj-s"].forEach(function(id){$(id).addEventListener("input",render);});
+  if(presets)Array.prototype.forEach.call(document.querySelectorAll("[data-dj-preset^='"+P+"']"),function(b){
+    b.addEventListener("click",function(){var p=presets[b.getAttribute("data-dj-preset").slice(P.length)];$(P+"dj-e").value=p.e;$(P+"dj-s").value=p.s;render();});
+  });
   render();
 }
 function initExamLab(){
   xload();
-  initRunner();initMock();initGraphLab();initDijkstraTool();renderProgress();
+  initRunner();initMock();initGraphLab("w6-");initDijkstraTool("w6-");renderProgress();
   $("w6-reset").addEventListener("click",function(){if(window.confirm("Clear your exam-lab progress?")){xstate={kinds:{}};xsave();renderProgress();}});
 }
 window.CKCExam={KINDS:KINDS,TOPICS:TOPICS,makeQuestion:makeQuestion,dijkstra:dijkstra,greedyCounts:greedyCounts,minCoins:minCoins,binTrace:binTrace,bubblePasses:bubblePasses,insertionAfter:insertionAfter};
@@ -2745,8 +2919,8 @@ function initMock1(){
   try{var last=JSON.parse(localStorage.getItem(MOCK_KEY)||"null");if(last){$("w7-last").hidden=false;$("w7-last").textContent="Your last attempt: "+last.score+" / "+last.total+" ("+last.pct+"%).";}}catch(e){}
 }
 
-initWeek2();initWeek4();initWeek5();initExamLab();initMock1();
-buildKit(2,W2);buildKit(4,W4);buildKit(5,W5);
+initWeek2();initWeek4();initWeek5();initWeek6G();initExamLab();initMock1();
+buildKit(2,W2);buildKit(4,W4);buildKit(5,W5);buildKit(8,W8);
 if(typeof module!=="undefined"&&module.exports){module.exports.data={W4:W4,W5:W5};}
 })();
 
@@ -2757,9 +2931,11 @@ if(typeof module!=="undefined"&&module.exports){module.exports.data={W4:W4,W5:W5
 "use strict";
 if(typeof document==="undefined"||!document.getElementById){return;}
 var AKEY="ckc111-active-week";
-var NAMES={0:"Home",1:"Week 1",2:"Week 2",3:"Week 3",4:"Week 4",5:"Week 5",6:"Exam Lab",7:"Test 1"};
-var SUBS={0:"Overview",1:"Logic I",2:"Equivalences",3:"Algorithms",4:"Relations I",5:"Relations II",6:"Practice",7:"Mock paper"};
-var TITLES={0:"CKC111 Discrete Structures: Study Guide",1:"Week 1: Propositional Logic",2:"Week 2: Logical Equivalences",3:"Week 3: Basic Algorithms",4:"Week 4: Relations I",5:"Week 5: Relations II",6:"Exam Lab: Practice",7:"Test 1: Mock Paper"};
+/* Week 6 (Graphs) is panel 8, so the Exam Lab (6) and Test 1 (7) keep their ids; ORDER is the order of the tabs */
+var ORDER=[0,1,2,3,4,5,8,6,7];
+var NAMES={0:"Home",1:"Week 1",2:"Week 2",3:"Week 3",4:"Week 4",5:"Week 5",8:"Week 6",6:"Exam Lab",7:"Test 1"};
+var SUBS={0:"Overview",1:"Logic I",2:"Equivalences",3:"Algorithms",4:"Relations I",5:"Relations II",8:"Graphs",6:"Practice",7:"Mock paper"};
+var TITLES={0:"CKC111 Discrete Structures: Study Guide",1:"Week 1: Propositional Logic",2:"Week 2: Logical Equivalences",3:"Week 3: Basic Algorithms",4:"Week 4: Relations I",5:"Week 5: Relations II",8:"Week 6: Graphs",6:"Exam Lab: Practice",7:"Test 1: Mock Paper"};
 function qa(s){return Array.prototype.slice.call(document.querySelectorAll(s));}
 function $(id){return document.getElementById(id);}
 var panels=qa(".week"),groups=qa(".navgroup"),tabs=qa("[data-weekbtn]"),rail=$("nav"),fab=$("fab"),backdrop=$("backdrop");
@@ -2767,8 +2943,8 @@ var panels=qa(".week"),groups=qa(".navgroup"),tabs=qa("[data-weekbtn]"),rail=$("
 /* ---- progress read from the saved answers ---- */
 function readJSON(k){try{var s=localStorage.getItem(k);return s?JSON.parse(s):null;}catch(e){return null;}}
 function progress(n){
-  if(n>=1&&n<=5){
-    var s=readJSON("ckc111-week"+n),c=0,i;
+  if((n>=1&&n<=5)||n===8){
+    var s=readJSON("ckc111-week"+(n===8?6:n)),c=0,i;
     if(s&&s.attempts){for(i=0;i<10;i++){if(String(s.attempts["p"+i]||"").trim().length>=4)c++;}}
     return {frac:c/10,text:c+" of 10 practice questions tried"};
   }
@@ -2795,7 +2971,7 @@ function paint(){
   var last=lastWeek(),btn=$("w0-continue");
   if(btn)btn.textContent=last?("Continue: "+NAMES[last]+" · "+SUBS[last]):"Start Week 1";
 }
-function lastWeek(){try{var s=parseInt(localStorage.getItem(AKEY),10);return s>=1&&s<=7?s:0;}catch(e){return 0;}}
+function lastWeek(){try{var s=parseInt(localStorage.getItem(AKEY),10);return s>=1&&s<=8?s:0;}catch(e){return 0;}}
 
 /* ---- tabs ---- */
 function show(n,keepScroll,focus){
@@ -2845,9 +3021,9 @@ if(cont)cont.addEventListener("click",function(){show(lastWeek()||1);});
 panels.forEach(function(p){
   var n=+p.getAttribute("data-week");if(n===0)return;
   var h='<nav class="pager" aria-label="Previous and next">';
-  var prev=n-1,next=n+1;
+  var k=ORDER.indexOf(n),prev=ORDER[k-1],next=ORDER[k+1];
   h+='<button type="button" class="prev" data-open-week="'+prev+'"><small>Previous</small><b>'+(prev===0?"Home":NAMES[prev]+" · "+SUBS[prev])+"</b></button>";
-  if(next<=7)h+='<button type="button" class="next" data-open-week="'+next+'"><small>Next</small><b>'+NAMES[next]+" · "+SUBS[next]+"</b></button>";
+  if(next!==undefined)h+='<button type="button" class="next" data-open-week="'+next+'"><small>Next</small><b>'+NAMES[next]+" · "+SUBS[next]+"</b></button>";
   p.insertAdjacentHTML("beforeend",h+"</nav>");
 });
 

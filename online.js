@@ -42,6 +42,10 @@
     num.style.fontWeight = '600';
     if (anchor.id === 'themeBtn') pill.style.marginLeft = 'auto';   // hub page: keep it next to the theme button
     anchor.parentNode.insertBefore(pill, anchor);
+    // some headers reorder their items on phones (flex order); keep the pill next to its button
+    function follow() { pill.style.order = getComputedStyle(anchor).order; }
+    follow();
+    window.addEventListener('resize', follow);
     return true;
   }
 
