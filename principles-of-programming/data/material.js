@@ -1,7 +1,7 @@
 // Study notes, condensed from the CCA101 lecture slides.
 // Each topic: { id, week, title, test: which assessments it appears in, sections: [{ h, html }] }
 // Code inside <pre class="code"> gets a "Try it" button that opens it in the playground.
-// To add Week 6/7 material, append a topic object at the end (or fill in the placeholder).
+// To add Week 7 material, append a topic object at the end.
 
 window.MATERIAL = [
 {
@@ -571,28 +571,118 @@ int main() {
 }</pre>
 <p><code>seed</code> is <b>just a variable</b>; any unsigned value works. Range formula: <code>rand() % (max - min + 1) + min</code>.</p>
 <p>The addendum slides also show the C++11 way: <code>#include &lt;random&gt;</code>, a <code>random_device</code> engine and a <code>uniform_int_distribution&lt;int&gt; randomInt(0, 100);</code> object.</p>` },
-    { h: 'Files: the three stream types', html: `
-<p>File I/O needs <code>#include &lt;fstream&gt;</code>. There is no slide set for this yet; these notes follow the textbook chapter and the past Test 1.</p>
-<table class="mini"><tr><th>Type</th><th>Use</th></tr>
-<tr><td><code>ofstream</code></td><td>output file stream: create a file and write to it</td></tr>
-<tr><td><code>ifstream</code></td><td>input file stream: read from an existing file</td></tr>
-<tr><td><code>fstream</code></td><td>can read, write, or both, depending on the flags</td></tr></table>
-<p>Steps: (1) include fstream, (2) define a file stream object, (3) <b>open</b> the file, (4) use <code>&lt;&lt;</code> / <code>&gt;&gt;</code> like cout / cin, (5) <b>close</b> the file.</p>
-<pre class="code">ofstream outFile;
-outFile.open("scores.txt");   // creates the file, or ERASES it if it exists
-outFile &lt;&lt; 90 &lt;&lt; endl;
-outFile.close();
+    { h: 'Files: why and how (slides 5.11)', html: `
+<p>A program can use <b>files</b> instead of the keyboard and screen for input and output. Data in a file is <b>kept between program runs</b>.</p>
+<p>Three steps, every time: <b>open</b> the file → <b>use</b> it (read from it, write to it, or both) → <b>close</b> it.</p>
+<table class="mini"><tr><th>What you need</th><th>Meaning</th></tr>
+<tr><td><code>#include &lt;fstream&gt;</code></td><td>the header for file access</td></tr>
+<tr><td><code>ifstream</code></td><td>input file stream: read <b>from</b> a file</td></tr>
+<tr><td><code>ofstream</code></td><td>output file stream: write <b>to</b> a file</td></tr>
+<tr><td><code>fstream</code></td><td>input from or output to a file</td></tr></table>
+<p>Define stream objects like variables: <code>ifstream infile;</code> and <code>ofstream outfile;</code></p>` },
+    { h: 'Opening a file and testing for errors', html: `
+<p><code>open</code> links a file name (outside the program) to a stream object (inside the program):</p>
+<pre class="code">infile.open("inventory.dat");
+outfile.open("report.txt");</pre>
+<ul>
+<li>The file name may include a drive and path.</li>
+<li>An <b>output</b> file is <b>created</b> if needed. If it already exists, it is <b>erased first</b>.</li>
+<li>An <b>input</b> file <b>must already exist</b>, or the open fails.</li>
+</ul>
+<p>Always test whether the open worked. Test the stream object itself, or use its <code>fail()</code> member function:</p>
+<pre class="code">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+using namespace std;
 
-ifstream inFile;
-int score;
-inFile.open("scores.txt");
-if (!inFile)                  // or inFile.fail()
-    cout &lt;&lt; "Error opening file.\n";
-else
-    while (inFile &gt;&gt; score)   // stops at the end of the file
-        cout &lt;&lt; score &lt;&lt; endl;
-inFile.close();</pre>` },
-    { h: 'File access flags', html: `
+int main() {
+    ifstream infile;
+    infile.open("test.txt");      // this file does not exist
+    if (!infile)                  // same as: if (infile.fail())
+        cout &lt;&lt; "File open failure!" &lt;&lt; endl;
+    else
+        cout &lt;&lt; "Opened test.txt" &lt;&lt; endl;
+    return 0;
+}</pre>` },
+    { h: 'Writing to a file, then reading it back', html: `
+<p>Use <code>&lt;&lt;</code> with an output file object (like <code>cout</code>) and <code>&gt;&gt;</code> with an input file object (like <code>cin</code>):</p>
+<pre class="code">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+using namespace std;
+
+int main() {
+    ofstream outputFile;
+    outputFile.open("demofile.txt");   // created, or erased if it exists
+    outputFile &lt;&lt; "Bach" &lt;&lt; endl;
+    outputFile &lt;&lt; "Beethoven" &lt;&lt; endl;
+    outputFile &lt;&lt; "Mozart" &lt;&lt; endl;
+    outputFile.close();                // writes everything out
+    cout &lt;&lt; "Data written to demofile.txt" &lt;&lt; endl;
+
+    ifstream inputFile;
+    string name;
+    inputFile.open("demofile.txt");
+    inputFile &gt;&gt; name;                 // reads one word, like cin
+    cout &lt;&lt; name &lt;&lt; endl;
+    inputFile &gt;&gt; name;
+    cout &lt;&lt; name &lt;&lt; endl;
+    inputFile.close();
+    return 0;
+}</pre>
+<p><code>&gt;&gt;</code> skips spaces and newlines and reads one value at a time. To read a whole line (with spaces), use <code>getline(inputFile, line)</code>.</p>` },
+    { h: 'Using loops to process files', html: `
+<p><code>inputFile &gt;&gt; number</code> gives <b>true</b> when a value was read and <b>false</b> otherwise (for example at the end of the file). So it can be the condition of a <code>while</code> loop:</p>
+<pre class="code">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+using namespace std;
+
+int main() {
+    ofstream out("numbers.txt");       // make a file to read (open in one step)
+    out &lt;&lt; "2 3 5 7 11" &lt;&lt; endl;
+    out.close();
+
+    ifstream inputFile;
+    int number, total = 0, count = 0;
+    inputFile.open("numbers.txt");
+    while (inputFile &gt;&gt; number) {      // stops when no more numbers
+        total += number;
+        count++;
+    }
+    inputFile.close();
+    cout &lt;&lt; count &lt;&lt; " numbers, total " &lt;&lt; total &lt;&lt; endl;
+    return 0;
+}</pre>
+<p>This one loop pattern answers most lab questions: total (accumulator), count (counter), largest (start from the first value), average (total / count, but check count is not 0), copy only some values (an <code>if</code> inside the loop).</p>
+<div class="callout"><b>Read a file line by line:</b> <code>while (getline(inFile, line)) { ... }</code>. Copying a file is this loop with <code>outFile &lt;&lt; line &lt;&lt; endl;</code> inside.</div>` },
+    { h: 'Closing files', html: `
+<pre class="code">infile.close();
+outfile.close();</pre>
+<p>Do not wait for the operating system to close files when the program ends: there may be a <b>limit on the number of open files</b>, and there may be <b>buffered output data</b> still waiting to be sent to the file.</p>` },
+    { h: 'Letting the user choose the file name', html: `
+<p>Since <b>C++11</b> you can pass a <code>string</code> object straight to <code>open</code>:</p>
+<pre class="code">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+using namespace std;
+
+int main() {
+    string filename, line;
+    ifstream inputFile;
+    cout &lt;&lt; "Enter the filename: ";
+    cin &gt;&gt; filename;                    // try stdin: notes.txt
+    inputFile.open(filename);
+    if (inputFile) {
+        while (getline(inputFile, line))
+            cout &lt;&lt; line &lt;&lt; endl;
+        inputFile.close();
+    } else {
+        cout &lt;&lt; "Error opening the file." &lt;&lt; endl;
+    }
+    return 0;
+}</pre>
+<p><b>Older C++ (before C++11):</b> <code>open</code> needs a <b>C-string</b> (a null-terminated string). String literals are stored as C-strings, but <code>string</code> objects are not. Use the <code>c_str()</code> member function, which returns the contents as a C-string:</p>
+<pre class="code">inputFile.open(filename.c_str());</pre>` },
+    { h: 'File access flags (past Test 1)', html: `
 <table class="mini"><tr><th>Flag</th><th>Meaning</th></tr>
 <tr><td><code>ios::in</code></td><td>open for input (reading)</td></tr>
 <tr><td><code>ios::out</code></td><td>open for output (writing); on its own an existing file's contents are <b>wiped out</b></td></tr>
@@ -600,17 +690,158 @@ inFile.close();</pre>` },
 <tr><td><code>ios::trunc</code></td><td>if the file exists, delete its contents</td></tr>
 <tr><td><code>ios::binary</code></td><td>binary mode (not text)</td></tr></table>
 <p>Combine flags with <code>|</code>. For a file that must be <b>read from and written to</b> without losing what is in it, the past Test 1 answer was
-<code>myFile.open("inout.txt", ios::in | ios::app);</code> (its feedback: <i>ios::out will wipe out the existing content</i>).</p>` },
+<code>myFile.open("inout.txt", ios::in | ios::app);</code> (its feedback: <i>ios::out will wipe out the existing content</i>). The flags are not in the Week 6 slides, but they were in the past test.</p>
+<div class="callout"><b>Practise:</b> the ProgrAss page has the 10 file-processing lab questions (filter <b>Files</b>). The checker creates the input files for you and shows the files your program writes.</div>` },
   ],
 },
 {
   id: 'week6',
   week: 'Week 6',
-  title: 'Week 6 material (coming soon)',
+  title: 'Loops Part 2',
   test: ['Test 1', 'ProgrAss 1'],
-  placeholder: true,
   sections: [
-    { h: 'Not added yet', html: `<p>This topic will be filled in once the Week 6 slides are available. ProgrAss 1 covers Week 6 <b>repetition structure only</b>; Test 1 covers up to Week 7 (basic file processing).</p>` },
+    { h: 'One loop, three ways', html: `
+<p>The Week 6 lab asks you to redo the Week 5 questions with a <code>while</code> loop, then a <code>do-while</code> loop. The same count from 1 to 5:</p>
+<pre class="code">#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    for (int i = 1; i &lt;= 5; i++)        // for: init; test; update in one line
+        cout &lt;&lt; i &lt;&lt; " ";
+    cout &lt;&lt; endl;
+
+    int j = 1;                          // while: init before the loop
+    while (j &lt;= 5) {                    // test
+        cout &lt;&lt; j &lt;&lt; " ";
+        j++;                            // update at the end of the body
+    }
+    cout &lt;&lt; endl;
+
+    int k = 1;                          // do-while: same pieces
+    do {
+        cout &lt;&lt; k &lt;&lt; " ";
+        k++;
+    } while (k &lt;= 5);                   // test at the end, semicolon!
+    cout &lt;&lt; endl;
+    return 0;
+}</pre>
+<table class="mini"><tr><th>Change</th><th>What to do</th></tr>
+<tr><td>for → while</td><td>Move the <b>initialisation</b> above the loop and the <b>update</b> to the end of the body; keep the test. Small change, but do not forget the update (infinite loop).</td></tr>
+<tr><td>while → do-while</td><td>Move the test to the end: <code>do { … } while (test);</code>. The body now runs <b>at least once</b>, so check the first value still makes sense.</td></tr></table>` },
+    { h: 'Prime numbers', html: `
+<p>Lab hint: an even number is prime only if it is 2. An odd number is prime if no odd number from 3 up to its square root divides it. Testing up to the square root is enough: if n = a × b, one of a and b is at most √n.</p>
+<pre class="code">#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    int n;
+    cout &lt;&lt; "Enter a positive integer: ";
+    cin &gt;&gt; n;                            // try stdin: 91
+    bool prime = n &gt;= 2;
+    if (n &gt; 2 &amp;&amp; n % 2 == 0)
+        prime = false;
+    for (int d = 3; d * d &lt;= n &amp;&amp; prime; d += 2)   // d * d &lt;= n means d &lt;= sqrt(n)
+        if (n % d == 0)
+            prime = false;
+    if (prime)
+        cout &lt;&lt; n &lt;&lt; " is a prime number." &lt;&lt; endl;
+    else
+        cout &lt;&lt; n &lt;&lt; " is not a prime number." &lt;&lt; endl;
+    return 0;
+}</pre>
+<p>The <code>bool</code> variable is a <b>flag</b>: start by assuming "prime", and switch it off as soon as a divisor is found. Putting <code>&amp;&amp; prime</code> in the test stops the loop early.</p>` },
+    { h: 'Patterns with nested loops', html: `
+<p>Every pattern question is the same plan: the <b>outer loop</b> counts the rows, and for each row the <b>inner loops</b> print the spaces and then the symbols. Work out a formula for each row first.</p>
+<table class="mini"><tr><th>Pattern (row i of n)</th><th>spaces</th><th>symbols</th></tr>
+<tr><td>Growing triangle</td><td>0</td><td>i</td></tr>
+<tr><td>Shrinking triangle</td><td>0</td><td>n − i + 1</td></tr>
+<tr><td>Right-aligned triangle</td><td>n − i</td><td>i</td></tr>
+<tr><td>Centred (diamond top half, "* * *")</td><td>n − i</td><td>i stars with a space between</td></tr></table>
+<pre class="code">#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    int rows = 4;
+    for (int i = 1; i &lt;= rows; i++) {          // top half of a diamond
+        for (int s = 0; s &lt; rows - i; s++)
+            cout &lt;&lt; " ";
+        for (int k = 1; k &lt;= i; k++)
+            cout &lt;&lt; (k &gt; 1 ? " *" : "*");
+        cout &lt;&lt; endl;
+    }
+    for (int i = rows - 1; i &gt;= 1; i--) {      // bottom half: the same rows backwards
+        for (int s = 0; s &lt; rows - i; s++)
+            cout &lt;&lt; " ";
+        for (int k = 1; k &lt;= i; k++)
+            cout &lt;&lt; (k &gt; 1 ? " *" : "*");
+        cout &lt;&lt; endl;
+    }
+    return 0;
+}</pre>
+<p>Two shapes one after the other (like the past assessment's + triangle then * triangle) are just two separate nested loops in a row.</p>` },
+    { h: 'Input validation with a loop', html: `
+<p>Keep asking until the input is valid (lab question 5: n must be within 10 to 20):</p>
+<pre class="code">#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    int n;
+    cout &lt;&lt; "Enter n (10 to 20): ";
+    cin &gt;&gt; n;                                  // try stdin: 5 25 12
+    while (n &lt; 10 || n &gt; 20) {
+        cout &lt;&lt; "Invalid. Enter n (10 to 20): ";
+        cin &gt;&gt; n;
+    }
+    cout &lt;&lt; "OK, n = " &lt;&lt; n &lt;&lt; endl;
+    return 0;
+}</pre>
+<p>Note the <b>||</b>: n is invalid if it is too small <i>or</i> too big. With <b>&amp;&amp;</b> the condition could never be true.</p>` },
+    { h: 'break vs continue (lab question 6)', html: `
+<pre class="code">#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    int x, sum = 0;
+    for (int i = 1; i &lt;= 10; i++) {
+        cin &gt;&gt; x;                     // try stdin: -2 -5 4 -1 -1 -1 -1 -1 -1 -1
+        if (x &gt;= 0)
+            break;                    // change to continue and compare
+        sum += x;
+    }
+    cout &lt;&lt; "Sum: " &lt;&lt; sum &lt;&lt; endl;
+    return 0;
+}</pre>
+<ul>
+<li>With <code>break</code>: the first number that is not negative <b>ends the loop</b>. Sum = −7.</li>
+<li>With <code>continue</code>: that number is <b>skipped</b>, and the loop goes on to read all ten. Sum = −14.</li>
+</ul>
+<p>Conclusion: <code>continue</code> skips the rest of the current iteration only; in a <code>for</code> loop it jumps to the update (<code>i++</code>) and then the test.</p>` },
+    { h: 'Random symbol guessing game', html: `
+<p>Past assessment questions 3 and 4. A random printable symbol is ASCII 33 (<code>!</code>) to 126 (<code>~</code>), so use <code>rand() % 94 + 33</code>. Comparing two <code>char</code> values compares their ASCII numbers.</p>
+<pre class="code">#include &lt;iostream&gt;
+#include &lt;cstdlib&gt;
+#include &lt;ctime&gt;
+using namespace std;
+
+int main() {
+    srand(time(0));
+    char secret = static_cast&lt;char&gt;(rand() % 94 + 33);
+    char guess = ' ';
+    int guesses = 0;
+    do {
+        cout &lt;&lt; "Guess the symbol: ";
+        cin &gt;&gt; guess;
+        guesses++;
+        if (guess &gt; secret)
+            cout &lt;&lt; "Symbol ASCII too high, try again." &lt;&lt; endl;
+        else if (guess &lt; secret)
+            cout &lt;&lt; "Symbol's ASCII too low, try again." &lt;&lt; endl;
+    } while (guess != secret &amp;&amp; cin);   // cin is false when the input runs out
+    if (guess == secret)
+        cout &lt;&lt; "Correct! You needed " &lt;&lt; guesses &lt;&lt; " guesses." &lt;&lt; endl;
+    return 0;
+}</pre>
+<p>A <code>do-while</code> fits well: the user must guess at least once. It is best in your own IDE (for example Visual Studio), where you can react to each hint. The "Try it" box sends all its input at once, so the <code>&amp;&amp; cin</code> part stops the loop when your typed guesses run out. The ProgrAss version of this question gives you the secret symbol so it can be tested.</p>` },
   ],
 },
 ];

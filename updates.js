@@ -6,7 +6,7 @@
   var UPDATES = {
     'computer-organisation': { at: '2026-10-28T22:52+08:00', text: 'New Random Test 1 (a fresh 50-question paper every time) and a question bank for each topic.' },
     'discrete-structures': { at: '2026-11-01T20:47+08:00', text: 'New Week 6: Graphs (Chapter 4), with a graph lab, a Dijkstra table and Tutorial 5 as practice.' },
-    'principles-of-programming': { at: '2026-10-30T13:17+08:00', text: 'Mock assessments now run in exam mode: copy, paste, right-click and shortcuts are blocked, and warnings are recorded.' },
+    'principles-of-programming': { at: '2026-11-02T13:51+08:00', text: 'Week 6 added: Loops Part 2 and Basic File Processing notes, plus 22 lab questions (file questions are checked too).' },
   };
 
   var me = document.currentScript;

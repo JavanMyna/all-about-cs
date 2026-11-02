@@ -38,11 +38,12 @@
   var QUIZ = window.QUIZ || [];
   var MATERIAL = window.MATERIAL || [];
   // problems are listed easiest first inside each group
-  var GROUPS = ['Sequence', 'Selection', 'Repetition'];
+  var GROUPS = ['Sequence', 'Selection', 'Repetition', 'Files'];
   var STEPS = 'Step by step';   // the easy-to-hard set in data/problems-new.js
   var PAST = 'Past Test 1 style';   // data/problems-past.js
   var HARD = 'Hard';   // data/problems-hard.js
   var EXTREME = 'Extreme';   // data/problems-extreme.js
+  var WEEK6 = 'Week 6 lab';   // data/problems-week6.js: loops part 2 (set 'week6') and file processing (set 'files')
   function groupOf(p) { return GROUPS.filter(function (g) { return p.topic.indexOf(g) === 0; })[0] || 'Other'; }
   PROBLEMS.sort(function (a, b) {
     return GROUPS.indexOf(groupOf(a)) - GROUPS.indexOf(groupOf(b)) || a.level - b.level;
@@ -173,7 +174,7 @@
     var solvedPct = PROBLEMS.length ? Math.round(100 * solved / PROBLEMS.length) : 0;
     var genHist = store.get('gen-history', []);
     var toc = [
-      ['#/material', 'Notes', 'Lecture material, weeks 1–5, with code you can run', MATERIAL.filter(function (m) { return !m.placeholder; }).length + ' topics'],
+      ['#/material', 'Notes', 'Lecture material, weeks 1–6, with code you can run', MATERIAL.filter(function (m) { return !m.placeholder; }).length + ' topics'],
       ['#/quiz', 'Test 1 mock', 'Moodle-style quiz, timed or by topic' + (hist.length ? ', best so far ' + bestQuiz + '%' : ''), QUIZ.length + ' questions'],
       ['#/progass', 'ProgrAss practice', 'CodeRunner problems with hidden tests and penalties', solved + '/' + PROBLEMS.length + ' solved'],
       ['#/generator', 'Question generator', 'A fresh, never-seen-before coding question every time', genHist.length ? genHist.length + ' generated' : '∞'],
@@ -604,7 +605,8 @@
   function pickPaMock(src) {
     var taken = {};
     function fromBank(level) {
-      var pool = PROBLEMS.filter(function (p) { return p.level === level && !taken[p.id]; });
+      // file processing is Test 1 material (Week 7), not ProgrAss 1
+      var pool = PROBLEMS.filter(function (p) { return p.level === level && !taken[p.id] && p.set !== 'files'; });
       if (level === 3) {   // prefer the extreme story programs, then the long assessment-style hard questions
         var hard = pool.filter(function (p) { return p.set === 'hard'; });
         var extreme = pool.filter(function (p) { return p.set === 'extreme'; });
@@ -648,11 +650,11 @@
           : countPicker + '<button class="btn primary" id="mockStart">Start mock</button>' +
             (mock && mock.finished ? '<a class="btn" href="#/progass/mock">Last result</a>' : '')) +
       '</div></div>' +
-      '<div class="row" style="margin:20px 0 10px"><div class="chips" id="chips">' + ['All'].concat(GROUPS, [STEPS, PAST, HARD, EXTREME]).map(function (g) {
+      '<div class="row" style="margin:20px 0 10px"><div class="chips" id="chips">' + ['All'].concat(GROUPS, [STEPS, PAST, HARD, EXTREME, WEEK6]).map(function (g) {
         return '<button class="chip' + (g === filter ? ' on' : '') + '" data-f="' + g + '">' + g + '</button>';
       }).join('') + '</div><span class="spacer"></span><span class="muted small">' + solved + ' / ' + PROBLEMS.length + ' solved</span>' +
         '<div class="bar" style="width:140px"><span style="width:' + Math.round(100 * solved / PROBLEMS.length) + '%"></span></div></div>' +
-      '<div class="plist">' + PROBLEMS.filter(function (p) { return filter === 'All' || groupOf(p) === filter || (filter === STEPS && p.set === 'steps') || (filter === PAST && p.set === 'past') || (filter === HARD && p.set === 'hard') || (filter === EXTREME && p.set === 'extreme'); }).map(function (p) {
+      '<div class="plist">' + PROBLEMS.filter(function (p) { return filter === 'All' || groupOf(p) === filter || (filter === STEPS && p.set === 'steps') || (filter === PAST && p.set === 'past') || (filter === HARD && p.set === 'hard') || (filter === EXTREME && p.set === 'extreme') || (filter === WEEK6 && (p.set === 'week6' || p.set === 'files')); }).map(function (p) {
         var s = progState(p.id);
         var status = s.best > 0 ? '<span class="pill ok">✓ ' + s.best + '%</span>' : s.checks ? '<span class="pill warn">attempted</span>' : '';
         return '<a class="pitem" href="#/progass/' + p.id + '"><span class="pnum">' + (PROBLEMS.indexOf(p) + 1) + '</span><div><div class="ptitle">' + esc(p.title) + '</div>' +
@@ -687,6 +689,9 @@
     var parts = [];
     if (t.vars) parts.push(esc(t.vars.replace(/^ {4}/gm, '')));
     if (t.stdin) parts.push('<span class="muted">keyboard input:</span>\n' + esc(t.stdin));
+    Object.keys(t.files || {}).forEach(function (n) {
+      parts.push('<span class="muted">file ' + esc(n) + ':</span>\n' + esc(String(t.files[n]).replace(/\n$/, '')));
+    });
     return '<pre>' + parts.join('\n') + '</pre>';
   }
 
