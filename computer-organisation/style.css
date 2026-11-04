@@ -363,6 +363,18 @@ p.tip { border-left: 3px solid var(--warn); padding: 4px 12px; font-size: .9rem;
 .explain.good > b:first-child { color: var(--ok); }
 .explain.bad { border-color: var(--bad); }
 .explain.bad > b:first-child { color: var(--bad); }
+/* why each option (js/why.js) */
+.why { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--rule); }
+.why > b { display: block; margin-bottom: 6px; font: 600 .74rem var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+.why ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.why li { display: flex; gap: 10px; align-items: baseline; line-height: 1.45; }
+.why li .L { flex: 0 0 auto; font: 600 .78rem var(--mono); min-width: 2.6em; }
+.why li.ok .L { color: var(--ok); }
+.why li.no .L { color: var(--bad); }
+.why li.ok .L::after { content: " ✓"; }
+.why li.no .L::after { content: " ✗"; }
+.why li.mine .W { font-weight: 500; }
+.why li em { font-style: normal; font: 600 .7rem var(--mono); text-transform: uppercase; letter-spacing: .06em; opacity: .7; margin-left: 4px; }
 .q-foot { display: flex; justify-content: space-between; margin-top: 16px; }
 .qnav { background: var(--paper); border: 1px solid var(--rule); padding: 14px; position: sticky; top: 132px; }
 .qnav-h { font: 600 .74rem var(--mono); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; display: flex; flex-direction: column; gap: 4px; }

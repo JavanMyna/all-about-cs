@@ -4,7 +4,7 @@
 // Wide screens: small text in the navbar, after the "CS courses" button. Phones: a thin line right under the navbar.
 (function () {
   var UPDATES = {
-    'computer-organisation': { at: '2026-10-28T22:52+08:00', text: 'New Random Test 1 (a fresh 50-question paper every time) and a question bank for each topic.' },
+    'computer-organisation': { at: '2026-11-04T18:23+08:00', text: 'Every paper and bank question now explains why each option (A, B, C, D) is right or wrong.' },
     'discrete-structures': { at: '2026-11-01T20:47+08:00', text: 'New Week 6: Graphs (Chapter 4), with a graph lab, a Dijkstra table and Tutorial 5 as practice.' },
     'principles-of-programming': { at: '2026-11-02T13:51+08:00', text: 'Week 6 added: Loops Part 2 and Basic File Processing notes, plus 22 lab questions (file questions are checked too).' },
   };

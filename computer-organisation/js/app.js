@@ -36,6 +36,13 @@ function optOrder(test, i, attemptSeed) {
   return [...free, ...fixed];
 }
 
+/* ---------- why each option is right or wrong (js/why.js), in the order the options are shown ---------- */
+function whyList(q, ord, chosen) {
+  const w = (typeof WHY !== 'undefined' && WHY[q.q]) || q.w;
+  if (!w) return '';
+  return `<div class="why"><b>Why each option</b><ul>${ord.map((k, j) => `<li class="${k === q.a ? 'ok' : 'no'}${chosen === k ? ' mine' : ''}"><span class="L">${LETTERS[j]}</span><span class="W">${w[k].replace(/^Correct\.\s*/, '')}${chosen === k ? ' <em>your answer</em>' : ''}</span></li>`).join('')}</ul></div>`;
+}
+
 /* ---------- router ---------- */
 const routes = { home: viewHome, learn: viewLearn, cheat: viewCheat, tests: viewTests, test: viewTest, practice: viewPractice, tutorials: viewTutorials, tools: viewTools };
 let cleanup = null;
@@ -259,7 +266,7 @@ function testRunner(test, run) {
           if (reveal) cls = k === q.a ? 'right' : (chosen === k ? 'wrong' : 'dim');
           return `<button class="opt ${cls}" data-k="${k}" ${reveal ? 'disabled' : ''}><span class="L">${LETTERS[j]}</span><span class="T">${q.o[k]}</span></button>`;
         }).join('')}</div>
-        ${reveal ? `<div class="explain ${chosen === q.a ? 'good' : 'bad'}"><b>${chosen === q.a ? 'Correct' : 'Not quite — answer ' + LETTERS[ord.indexOf(q.a)]}</b>${q.e}</div>` : ''}
+        ${reveal ? `<div class="explain ${chosen === q.a ? 'good' : 'bad'}"><b>${chosen === q.a ? 'Correct' : 'Not quite — answer ' + LETTERS[ord.indexOf(q.a)]}</b>${q.e}${whyList(q, ord, chosen)}</div>` : ''}
       </div>
       <div class="q-foot">
         <button class="btn" id="prevQ" ${i === 0 ? 'disabled' : ''}>← Previous</button>
@@ -349,7 +356,7 @@ function results(test, run) {
       return `<div class="rq ${ok ? 'ok' : 'bad'}"><div class="q-meta"><span class="qn">Q${i + 1}</span><span class="pill t${q.t}">Topic ${q.t}</span><span class="mark">${ok ? '✓ Correct' : run.ans[i] === null ? '— Skipped' : '✗ Wrong'}</span></div>
         <div class="q-text">${q.q}</div>
         <div class="opts small">${ord.map((k, j) => `<div class="opt ${k === q.a ? 'right' : run.ans[i] === k ? 'wrong' : 'dim'}"><span class="L">${LETTERS[j]}</span><span class="T">${q.o[k]}</span>${run.ans[i] === k ? '<em>your answer</em>' : ''}</div>`).join('')}</div>
-        <div class="explain">${q.e}</div></div>`;
+        <div class="explain">${q.e}${whyList(q, ord, run.ans[i])}</div></div>`;
     }).join('') : '<p class="empty">Nothing here.</p>';
   };
   document.getElementById('seg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; document.querySelectorAll('#seg button').forEach(x => x.classList.toggle('on', x === b)); draw(b.dataset.f); });
