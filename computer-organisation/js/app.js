@@ -257,7 +257,7 @@ function testRunner(test, run) {
     qwrap.innerHTML = `
       <div class="qcard">
         <div class="q-meta"><span class="qn">Question ${i + 1}<small> / ${N}</small></span><span class="pill t${q.t}">Topic ${q.t} · ${TOPIC_NAMES[q.t]}</span>
-          <button class="flag ${run.flag[i] ? 'on' : ''}" id="flagBtn" title="Flag (F)">⚑ ${run.flag[i] ? 'Flagged' : 'Flag'}</button></div>
+          <button class="flag ${run.flag[i] ? 'on' : ''}" id="flagBtn" title="Flag (F)">⚑ ${run.flag[i] ? 'Flagged' : 'Flag'}</button>${SciCalc.button()}</div>
         <div class="q-text">${q.q}</div>
         <div class="opts">${ord.map((k, j) => {
           let cls = chosen === k ? 'sel' : '';
@@ -271,6 +271,7 @@ function testRunner(test, run) {
         ${i < N - 1 ? `<button class="btn primary" id="nextQ">Next →</button>` : `<button class="btn primary" id="finishQ">Finish & submit</button>`}
       </div>`;
     qwrap.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => choose(+b.dataset.k)));
+    SciCalc.sync();
     document.getElementById('flagBtn').onclick = toggleFlag;
     document.getElementById('prevQ').onclick = () => go(i - 1);
     const nx = document.getElementById('nextQ'); if (nx) nx.onclick = () => go(i + 1);
@@ -419,6 +420,7 @@ function viewPractice(drillId) {
     const d = DRILLS[cur], q = d.gen();
     box.innerHTML = `
       <div class="qcard">
+        <div class="q-meta calc-row">${SciCalc.button()}</div>
         <div class="q-text big">${q.q}</div>
         <form class="answer" id="af" autocomplete="off">
           <input id="ain" class="mono" placeholder="${q.kind === 'bits' ? 'e.g. 11010011' : 'Your answer'}" spellcheck="false" autofocus>

@@ -338,6 +338,9 @@ p.tip { border-left: 3px solid var(--warn); padding: 4px 12px; font-size: .9rem;
 .flag { margin-left: auto; border: 1px solid var(--rule); background: transparent; color: var(--ink-3); padding: 3px 9px; font: .74rem var(--mono); cursor: pointer; text-transform: uppercase; letter-spacing: .05em; }
 .flag:hover { border-color: var(--ink); color: var(--ink); }
 .flag.on { border-color: var(--warn); color: var(--warn); background: var(--warn-tint); }
+/* calculator button (js/calc.js) */
+.q-meta .calc-btn { margin-left: 8px; }
+.q-meta.calc-row { justify-content: flex-end; margin-bottom: 6px; }
 .q-text { font: 400 1.22rem/1.5 var(--serif); margin-bottom: 22px; }
 .q-text.big { font-size: 1.32rem; }
 .opts { display: grid; border-top: 1px solid var(--rule); }
