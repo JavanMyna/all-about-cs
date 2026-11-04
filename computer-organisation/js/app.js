@@ -129,8 +129,6 @@ function viewLearn(tid = 't1', sid) {
       <div class="ln-topics">${TOPICS.map(x => `<a href="#learn/${x.id}" class="${x === t ? 'on' : ''}"><span>${x.num}</span>${x.title}</a>`).join('')}</div>
       <div class="ln-h">In this topic</div>
       <nav class="ln-secs">${t.sections.map(s => `<a href="#learn/${t.id}/${s.id}" data-s="${s.id}">${read[t.id + '/' + s.id] ? '<i class="dot done"></i>' : '<i class="dot"></i>'}${s.title}</a>`).join('')}</nav>
-      <div class="ln-h">Files</div>
-      <div class="ln-files">${t.files.map(([f, l]) => pdf(f, l)).join('')}</div>
     </aside>
     <article class="learn-body">
       <header class="lb-head">
@@ -471,7 +469,7 @@ function viewTutorials(g) {
   app.innerHTML = `
   <div class="page-head"><div><p class="eyebrow">§04 · Worked solutions</p><h1>Tutorial answers</h1><p class="lede">Every tutorial question and slide activity, with the full working shown. Try each one yourself first, then open it to check.</p></div></div>
   <div class="seg wide">${groups.map(k => `<a href="#tutorials/${k}" class="${k === cur ? 'on' : ''}">${TUT_GROUPS[k].name.split(' — ')[0]}<small>${TUT_GROUPS[k].name.split(' — ')[1]}</small></a>`).join('')}</div>
-  <div class="tut-head"><h2>${TUT_GROUPS[cur].name}</h2><div class="row">${pdf(TUT_GROUPS[cur].file, 'Open the question sheet')}<button class="btn sm ghost" id="expand">Expand all</button></div></div>
+  <div class="tut-head"><h2>${TUT_GROUPS[cur].name}</h2><div class="row"><button class="btn sm ghost" id="expand">Expand all</button></div></div>
   <div class="tut-list">${ANS.map((a, i) => a.g === cur ? `<details class="ans" data-i="${i}"><summary><span class="aq">${a.q}</span><span class="aa">Show answer</span></summary><div class="sol"></div></details>` : '').join('')}</div>`;
   const fill = d => { const a = ANS[d.dataset.i]; if (!a.r) a.r = a.f(); const sol = d.querySelector('.sol'); if (!sol.innerHTML) { sol.innerHTML = a.r.html; d.querySelector('.aa').innerHTML = a.r.ans; } };
   app.querySelectorAll('details.ans').forEach(d => d.addEventListener('toggle', () => d.open && fill(d)));

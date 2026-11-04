@@ -6,11 +6,11 @@ const add = (g, q, f) => ANS.push({ g, q, f });
 const conv = (s, a, b) => { const r = convertExplain(s, a, b); return { ans: `${sub(s, a)} = ${sub(r.answer, b)}`, html: r.html }; };
 
 const TUT_GROUPS = {
-  T1: { name: 'Tutorial 1 — Introduction (discussion)', file: 'CST131-CCA102_Tutorial1_2627 (1).pdf' },
-  T2: { name: 'Tutorial 2 — Number systems', file: 'CST131-CCA102_Tutorial2_2627.pdf' },
-  T3: { name: 'Tutorial 3 — Computer arithmetic', file: 'CST131-CCA102_Tutorial3_2627.pdf' },
-  S2: { name: 'Slide activities — Topic 2', file: 'Topic 2 - Number Systems (2).pptx' },
-  S3: { name: 'Slide activities — Topic 3', file: 'Topic 3 - Computer Arithmetic_Pt1.pdf' },
+  T1: { name: 'Tutorial 1 — Introduction (discussion)' },
+  T2: { name: 'Tutorial 2 — Number systems' },
+  T3: { name: 'Tutorial 3 — Computer arithmetic' },
+  S2: { name: 'Slide activities — Topic 2' },
+  S3: { name: 'Slide activities — Topic 3' },
 };
 
 // ---- Tutorial 1 (discussion — model answers)

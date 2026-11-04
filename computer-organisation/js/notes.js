@@ -7,7 +7,6 @@ const key = (h) => `<div class="callout key"><b>Remember</b>${h}</div>`;
 const check = (q, a) => `<details class="qc"><summary><span class="qc-tag">Quick check</span>${q}</summary><div>${a}</div></details>`;
 const T = (head, rows) => `<div class="tbl-wrap"><table class="tbl"><thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 // Slides and tutorial sheets live in private/ (git-ignored), so they only open on this computer.
-const pdf = (file, label) => `<a class="src" href="${encodeURI('private/' + (/Tutorial/.test(file) ? 'tutorials/' : 'lectures/') + file)}" target="_blank" rel="noopener">${label}</a>`;
 document.addEventListener('click', (e) => {
   const a = e.target.closest && e.target.closest('a.src');
   if (!a) return;
@@ -25,7 +24,6 @@ document.addEventListener('click', (e) => {
 const TOPICS = [
   {
     id: 't1', num: 1, title: 'Introduction', sub: 'Architecture vs organisation, structure & function, history, ARM/x86, cloud, performance',
-    files: [['Topic 1a - Intro.pdf', 'Slides Part 1'], ['Topic 1b - Intro.pdf', 'Slides Part 2'], ['CST131-CCA102_Tutorial1_2627 (1).pdf', 'Tutorial 1']],
     weight: '18 of 50 MCQs last year',
     sections: [
       { id: 'arch', title: 'Architecture vs organisation', html: `
@@ -117,7 +115,6 @@ const TOPICS = [
   },
   {
     id: 't2', num: 2, title: 'Number Systems', sub: 'Bases, positional value, all conversions, BCD / ASCII / EBCDIC',
-    files: [['Topic 2 - Number Systems (2).pptx', 'Slides (pptx)'], ['CST131-CCA102_Tutorial2_2627.pdf', 'Tutorial 2']],
     weight: '14 of 50 MCQs last year',
     sections: [
       { id: 'bases', title: 'Bases & positional value', html: `
@@ -177,7 +174,6 @@ const TOPICS = [
   },
   {
     id: 't3', num: 3, title: 'Computer Arithmetic', sub: 'ALU, signed representations, 2’s complement add/sub, overflow, multiplication, division, IEEE 754',
-    files: [['Topic 3 - Computer Arithmetic_Pt1.pdf', 'Slides Part 1'], ['Topic 3 - Computer Arithmetic_Pt2_lecture (1).pptx', 'Slides Part 2 (pptx)'], ['CST131-CCA102_Tutorial3_2627.pdf', 'Tutorial 3']],
     weight: '18 of 50 MCQs last year — most calculations',
     sections: [
       { id: 'alu', title: 'The ALU', html: `
