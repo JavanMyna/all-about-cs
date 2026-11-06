@@ -1,4 +1,4 @@
-/* ============ notes.js — study material for Test 1 (Topics 1–3) ============
+/* ============ notes.js — study material for Test 1 (Topics 1–3); Topic 4 is added by topic4.js ============
    Each topic has sections; each section is HTML. Small helpers keep the markup short. */
 
 const tip = (h) => `<div class="callout tip"><b>Exam tip</b>${h}</div>`;
@@ -304,5 +304,15 @@ const CHEAT = `
     <li>Booth (Q₀Q₋₁): 10 → A−M; 01 → A+M; 00/11 → nothing. Then arithmetic shift right.</li>
     <li>Restoring division: shift left A,Q; A−M; if negative Q₀=0 and restore, else Q₀=1. Q = quotient, A = remainder.</li>
     <li>IEEE 754: 1 | 8 (bias 127) | 23. Normalise to 1.xxx × 2ᵉ, hidden 1.</li>
+  </ul></section>
+  <section><h3>Topic 4 — Digital logic (after Test 1)</h3><ul>
+    <li>AND = all 1 · OR = any 1 · NOT flips · NAND 0 only if all 1 · NOR 1 only if all 0 · XOR 1 if different.</li>
+    <li>A+1 = 1 · A·0 = 0 · A+A’ = 1 · A·A’ = 0 · A+A = A · A+BC = (A+B)(A+C).</li>
+    <li>De Morgan: (AB)’ = A’+B’ · (A+B)’ = A’B’. Break the bar, change the operation.</li>
+    <li>Complete sets: {AND,OR,NOT} {AND,NOT} {OR,NOT} {NAND} {NOR}.</li>
+    <li>SOP: one AND term per 1-row. POS: one OR term per 0-row.</li>
+    <li>K-map order 00 01 11 10, edges wrap. Groups of 1/2/4/8: 2 drops 1 variable, 4 drops 2, 8 drops 3. d = use if it helps.</li>
+    <li>MUX 2ᵏ→1 needs k select lines. Decoder n → 2ⁿ outputs. 1 KB from 4 × 256: 8 + 2 = 10 address bits.</li>
+    <li>Half adder: S = A⊕B, C = AB. Full adder: S = A⊕B⊕C, Carry = AB + AC + BC. Ripple carry is slow → carry lookahead.</li>
   </ul></section>
 </div>`;

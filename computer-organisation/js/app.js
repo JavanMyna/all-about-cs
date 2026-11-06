@@ -3,7 +3,7 @@
 const app = document.getElementById('app');
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const LETTERS = 'ABCD';
-const TOPIC_NAMES = { 1: 'Introduction', 2: 'Number systems', 3: 'Arithmetic' };
+const TOPIC_NAMES = { 1: 'Introduction', 2: 'Number systems', 3: 'Arithmetic', 4: 'Digital logic' };
 
 /* ---------- storage (safe) ---------- */
 const store = {
