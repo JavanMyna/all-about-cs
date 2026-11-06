@@ -534,3 +534,6 @@ th{font-family:var(--mono);font-size:.85rem}
   .brandlink .bt{min-width:0}
   .brandlink .bt b,.brandlink .bt span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 }
+/* Test 1 archive */
+.archived-note{display:inline-block;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;border:1px dashed currentColor;padding:3px 9px;border-radius:6px;opacity:.8;margin:0 0 10px}
+.wcard.archive{border-style:dashed}

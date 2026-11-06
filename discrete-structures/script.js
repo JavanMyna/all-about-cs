@@ -2932,10 +2932,10 @@ if(typeof module!=="undefined"&&module.exports){module.exports.data={W4:W4,W5:W5
 if(typeof document==="undefined"||!document.getElementById){return;}
 var AKEY="ckc111-active-week";
 /* Week 6 (Graphs) is panel 8, so the Exam Lab (6) and Test 1 (7) keep their ids; ORDER is the order of the tabs */
-var ORDER=[0,1,2,3,4,5,8,6,7];
-var NAMES={0:"Home",1:"Week 1",2:"Week 2",3:"Week 3",4:"Week 4",5:"Week 5",8:"Week 6",6:"Exam Lab",7:"Test 1"};
+var ORDER=[0,1,2,3,4,5,8,6];   /* Test 1 (7) is archived: it has no tab, and is opened from the Home archive card */
+var NAMES={0:"Home",1:"Week 1",2:"Week 2",3:"Week 3",4:"Week 4",5:"Week 5",8:"Week 6",6:"Exam Lab",7:"Test 1 archive"};
 var SUBS={0:"Overview",1:"Logic I",2:"Equivalences",3:"Algorithms",4:"Relations I",5:"Relations II",8:"Graphs",6:"Practice",7:"Mock paper"};
-var TITLES={0:"CKC111 Discrete Structures: Study Guide",1:"Week 1: Propositional Logic",2:"Week 2: Logical Equivalences",3:"Week 3: Basic Algorithms",4:"Week 4: Relations I",5:"Week 5: Relations II",8:"Week 6: Graphs",6:"Exam Lab: Practice",7:"Test 1: Mock Paper"};
+var TITLES={0:"CKC111 Discrete Structures: Study Guide",1:"Week 1: Propositional Logic",2:"Week 2: Logical Equivalences",3:"Week 3: Basic Algorithms",4:"Week 4: Relations I",5:"Week 5: Relations II",8:"Week 6: Graphs",6:"Exam Lab: Practice",7:"Test 1 archive: Mock Paper"};
 function qa(s){return Array.prototype.slice.call(document.querySelectorAll(s));}
 function $(id){return document.getElementById(id);}
 var panels=qa(".week"),groups=qa(".navgroup"),tabs=qa("[data-weekbtn]"),rail=$("nav"),fab=$("fab"),backdrop=$("backdrop");
@@ -3021,7 +3021,7 @@ if(cont)cont.addEventListener("click",function(){show(lastWeek()||1);});
 panels.forEach(function(p){
   var n=+p.getAttribute("data-week");if(n===0)return;
   var h='<nav class="pager" aria-label="Previous and next">';
-  var k=ORDER.indexOf(n),prev=ORDER[k-1],next=ORDER[k+1];
+  var k=ORDER.indexOf(n),prev=k<0?0:ORDER[k-1],next=k<0?undefined:ORDER[k+1];
   h+='<button type="button" class="prev" data-open-week="'+prev+'"><small>Previous</small><b>'+(prev===0?"Home":NAMES[prev]+" · "+SUBS[prev])+"</b></button>";
   if(next!==undefined)h+='<button type="button" class="next" data-open-week="'+next+'"><small>Next</small><b>'+NAMES[next]+" · "+SUBS[next]+"</b></button>";
   p.insertAdjacentHTML("beforeend",h+"</nav>");
