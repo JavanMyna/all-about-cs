@@ -163,27 +163,29 @@
   // ───────────────────────── home ─────────────────────────
   var EXAMS = [
     { name: 'Programming Assessment 1', at: '2026-11-03T17:00:00+08:00', time: 'Tue 3 Nov 2026 · 17:00 – 18:00 (1 hour) · DUP C', archived: true,
-      topics: 'Done. The CodeRunner practice, the mock ProgrAss and the generator are in the ProgrAss 1 archive.', link: '#/archive', cta: 'Open the archive' },
-    { name: 'Test 1', at: '2026-11-10T17:30:00+08:00', time: 'Tue 10 Nov 2026 · 17:30 – 19:30 (2 hours) · DUP C',
+      topics: 'Done. The CodeRunner practice bank and the mock ProgrAss are in the ProgrAss 1 archive.', link: '#/archive', cta: 'Open the archive' },
+    { name: 'Test 1', at: '2026-11-10T17:30:00+08:00', time: 'Tue 10 Nov 2026 · 17:30 – 18:30 (1 hour) · DUP C',
       topics: 'Week 1–7 (up to basic file processing). Moodle quiz, single and multiple answer, plus CodeRunner questions.', link: '#/quiz', cta: 'Take a mock test' },
   ];
   function viewHome() {
     var solved = PROBLEMS.filter(function (p) { return (store.get('prog-' + p.id, {}).best || 0) > 0; }).length;
     var hist = store.get('quiz-history', []);
     var bestQuiz = hist.reduce(function (m, h) { return Math.max(m, h.pct); }, 0);
+    var genHist = store.get('gen-history', []);
     var toc = [
       ['#/material', 'Notes', 'Lecture material, weeks 1–6, with code you can run', MATERIAL.filter(function (m) { return !m.placeholder; }).length + ' topics'],
       ['#/quiz', 'Test 1 mock', 'Moodle-style quiz, timed or by topic' + (hist.length ? ', best so far ' + bestQuiz + '%' : ''), QUIZ.length + ' questions'],
+      ['#/generator', 'Question generator', 'A fresh, never-seen-before coding question every time', genHist.length ? genHist.length + ' generated' : '∞'],
       ['#/playground', 'Scratchpad', 'Run any C++ program with keyboard input', 'g++ 13'],
-      ['#/archive', 'ProgrAss 1 archive', 'Done: CodeRunner practice, the mock ProgrAss and the question generator', solved + '/' + PROBLEMS.length + ' solved'],
+      ['#/archive', 'ProgrAss 1 archive', 'Done: the CodeRunner practice bank and the mock ProgrAss', solved + '/' + PROBLEMS.length + ' solved'],
     ];
     app.innerHTML =
       '<section class="cover">' +
         '<div class="cover-main">' +
           '<div class="kicker">CCA101 · Session 2026/2027</div>' +
           '<h1 class="cover-title">Principles of<br>Programming</h1>' +
-          '<p class="cover-sub">CCA101 / CPT111. Everything for Test 1 in one place: notes, a mock test with coding questions marked by a real compiler, and a scratchpad. ProgrAss 1 is done and kept in the archive.</p>' +
-          '<div class="row"><a class="btn primary" href="#/quiz">Sit the mock test</a><a class="btn" href="#/archive">ProgrAss 1 archive</a></div>' +
+          '<p class="cover-sub">CCA101 / CPT111. Everything for Test 1 in one place: notes, a mock test with coding questions marked by a real compiler, and a question generator and a scratchpad. ProgrAss 1 is done and kept in the archive.</p>' +
+          '<div class="row"><a class="btn primary" href="#/quiz">Sit the mock test</a><a class="btn" href="#/generator">Generate a question</a><a class="btn" href="#/archive">ProgrAss 1 archive</a></div>' +
         '</div>' +
         '<aside class="timetable"><div class="kicker">Timetable</div>' +
           EXAMS.map(function (e, i) {
@@ -212,16 +214,14 @@
   function viewArchive() {
     var solved = PROBLEMS.filter(function (p) { return (store.get('prog-' + p.id, {}).best || 0) > 0; }).length;
     var solvedPct = PROBLEMS.length ? Math.round(100 * solved / PROBLEMS.length) : 0;
-    var genHist = store.get('gen-history', []);
     var mock = store.get('pa-mock', null);
     var items = [
       ['#/progass', 'ProgrAss practice', 'All ' + PROBLEMS.length + ' CodeRunner problems with hidden tests and penalties, and the timed mock ProgrAss', solved + '/' + PROBLEMS.length + ' solved'],
-      ['#/generator', 'Question generator', 'A fresh, never-seen-before coding question every time', genHist.length ? genHist.length + ' generated' : '∞'],
     ];
     if (mock && mock.finished) items.push(['#/progass/mock', 'Last mock ProgrAss result', 'Your marks and recorded warnings from the last mock', '']);
     app.innerHTML =
       '<header class="page-head"><div class="kicker">Archive</div><h1>ProgrAss 1 archive</h1>' +
-      '<p class="lede">Programming Assessment 1 (Tue 3 Nov 2026) is done. Everything from it still works here, with your progress saved. The coding questions are still good practice: the Test 1 mock takes its CodeRunner questions from the same bank.</p></header>' +
+      '<p class="lede">Programming Assessment 1 (Tue 3 Nov 2026) is done. Everything from it still works here, with your progress saved. The coding questions are still good practice: the Test 1 mock takes its CodeRunner questions from the same bank, and the question generator is still on the main menu.</p></header>' +
       '<section class="toc"><ol>' + items.map(function (t, i) {
         return '<li><a href="' + t[0] + '"><span class="toc-no">' + (i + 1) + '</span><span class="toc-text"><b>' + esc(t[1]) + '</b><small>' + esc(t[2]) + '</small></span>' +
           '<span class="toc-dots"></span><span class="toc-meta">' + esc(t[3]) + '</span></a></li>';
@@ -273,8 +273,8 @@
   // Like the past Test 1, the mock also has 2–5 CodeRunner questions mixed in (default 4), worth CODE_MARKS each,
   // with the Moodle quiz penalty regime "10, 20, ... %" (the first Check is free).
   var CODING_CHOICES = [2, 3, 4, 5], CODING_DEFAULT = 4, CODE_MARKS = 10;
-  // the real Test 1 is 2 hours, whatever the number of programming questions
-  var TEST1_MINUTES = 120;
+  // the real Test 1 is 1 hour (17:30–18:30), whatever the number of programming questions
+  var TEST1_MINUTES = 60;
   function mockMinutes() { return TEST1_MINUTES; }
   function quizPenalty(checkNo) { return Math.min(100, Math.max(0, (checkNo - 1) * 10)); }
   // about half from the past-Test-1-style set, the rest from the step-by-step set / easier bank problems
@@ -316,7 +316,7 @@
       '<div class="grid grid-2">' +
         '<div class="card"><h2>Timed mock test</h2>' +
           '<p>' + MOCK_QUESTIONS + ' random questions from all ' + QUIZ.length + ' + programming (CodeRunner) questions, ' + CODE_MARKS +
-            ' marks each, compiled with g++ like the past Test 1. ' + TEST1_MINUTES / 60 + ' hours, like the real Test 1. Review with explanations at the end.</p>' +
+            ' marks each, compiled with g++ like the past Test 1. ' + TEST1_MINUTES + ' minutes, like the real Test 1. Review with explanations at the end.</p>' +
           (mock && !mock.finished ? '<p class="pill warn">Attempt in progress</p> ' : '') +
           '<label class="small muted">Programming questions <select id="codeCount" class="select">' + CODING_CHOICES.map(function (n) {
             return '<option value="' + n + '"' + (n === store.get('mock-coding', CODING_DEFAULT) ? ' selected' : '') + '>' + n + ' (' +
