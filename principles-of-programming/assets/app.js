@@ -155,15 +155,15 @@
     } else {
       window.Lockdown.stop();
     }
-    var views = { home: viewHome, material: viewMaterial, quiz: viewQuiz, progass: viewProgass, generator: viewGenerator, playground: viewPlayground };
+    var views = { home: viewHome, material: viewMaterial, quiz: viewQuiz, progass: viewProgass, generator: viewGenerator, playground: viewPlayground, archive: viewArchive };
     (views[page] || viewHome)(parts.slice(1));
   }
   window.addEventListener('hashchange', route);
 
   // ───────────────────────── home ─────────────────────────
   var EXAMS = [
-    { name: 'Programming Assessment 1', at: '2026-11-03T17:00:00+08:00', time: 'Tue 3 Nov 2026 · 17:00 – 18:00 (1 hour) · DUP C',
-      topics: 'Week 1–6 (Week 6: repetition only). CodeRunner: 2–4 partial programs to complete.', link: '#/progass', cta: 'Practise coding' },
+    { name: 'Programming Assessment 1', at: '2026-11-03T17:00:00+08:00', time: 'Tue 3 Nov 2026 · 17:00 – 18:00 (1 hour) · DUP C', archived: true,
+      topics: 'Done. The CodeRunner practice, the mock ProgrAss and the generator are in the ProgrAss 1 archive.', link: '#/archive', cta: 'Open the archive' },
     { name: 'Test 1', at: '2026-11-10T17:30:00+08:00', time: 'Tue 10 Nov 2026 · 17:30 – 19:30 (2 hours) · DUP C',
       topics: 'Week 1–7 (up to basic file processing). Moodle quiz, single and multiple answer, plus CodeRunner questions.', link: '#/quiz', cta: 'Take a mock test' },
   ];
@@ -171,22 +171,19 @@
     var solved = PROBLEMS.filter(function (p) { return (store.get('prog-' + p.id, {}).best || 0) > 0; }).length;
     var hist = store.get('quiz-history', []);
     var bestQuiz = hist.reduce(function (m, h) { return Math.max(m, h.pct); }, 0);
-    var solvedPct = PROBLEMS.length ? Math.round(100 * solved / PROBLEMS.length) : 0;
-    var genHist = store.get('gen-history', []);
     var toc = [
       ['#/material', 'Notes', 'Lecture material, weeks 1–6, with code you can run', MATERIAL.filter(function (m) { return !m.placeholder; }).length + ' topics'],
       ['#/quiz', 'Test 1 mock', 'Moodle-style quiz, timed or by topic' + (hist.length ? ', best so far ' + bestQuiz + '%' : ''), QUIZ.length + ' questions'],
-      ['#/progass', 'ProgrAss practice', 'CodeRunner problems with hidden tests and penalties', solved + '/' + PROBLEMS.length + ' solved'],
-      ['#/generator', 'Question generator', 'A fresh, never-seen-before coding question every time', genHist.length ? genHist.length + ' generated' : '∞'],
       ['#/playground', 'Scratchpad', 'Run any C++ program with keyboard input', 'g++ 13'],
+      ['#/archive', 'ProgrAss 1 archive', 'Done: CodeRunner practice, the mock ProgrAss and the question generator', solved + '/' + PROBLEMS.length + ' solved'],
     ];
     app.innerHTML =
       '<section class="cover">' +
         '<div class="cover-main">' +
           '<div class="kicker">CCA101 · Session 2026/2027</div>' +
           '<h1 class="cover-title">Principles of<br>Programming</h1>' +
-          '<p class="cover-sub">CCA101 / CPT111. Everything for ProgrAss 1 and Test 1 in one place: notes, a mock test, and coding questions marked by a real compiler.</p>' +
-          '<div class="row"><a class="btn primary" href="#/generator">Generate a question</a><a class="btn" href="#/quiz">Sit the mock test</a></div>' +
+          '<p class="cover-sub">CCA101 / CPT111. Everything for Test 1 in one place: notes, a mock test with coding questions marked by a real compiler, and a scratchpad. ProgrAss 1 is done and kept in the archive.</p>' +
+          '<div class="row"><a class="btn primary" href="#/quiz">Sit the mock test</a><a class="btn" href="#/archive">ProgrAss 1 archive</a></div>' +
         '</div>' +
         '<aside class="timetable"><div class="kicker">Timetable</div>' +
           EXAMS.map(function (e, i) {
@@ -199,17 +196,38 @@
       '<section class="toc"><div class="kicker">Contents</div><ol>' + toc.map(function (t, i) {
         return '<li><a href="' + t[0] + '"><span class="toc-no">' + (i + 1) + '</span><span class="toc-text"><b>' + esc(t[1]) + '</b><small>' + esc(t[2]) + '</small></span>' +
           '<span class="toc-dots"></span><span class="toc-meta">' + esc(t[3]) + '</span></a></li>';
-      }).join('') + '</ol></section>' +
-      '<section class="progress-strip"><span class="kicker">Coding progress</span><div class="bar"><span style="width:' + solvedPct + '%"></span></div><span class="mono small">' + solvedPct + '%</span></section>';
+      }).join('') + '</ol></section>';
     every(1000, function () {
       EXAMS.forEach(function (e, i) {
         var el = $('#cd' + i); if (!el) return;
         var ms = new Date(e.at) - new Date();
-        if (ms <= 0) { el.textContent = 'done, good luck'; return; }
+        if (ms <= 0) { el.textContent = e.archived ? 'done · archived' : 'done, good luck'; return; }
         var d = Math.floor(ms / 864e5), h = Math.floor(ms / 36e5) % 24, m = Math.floor(ms / 6e4) % 60, s = Math.floor(ms / 1e3) % 60;
         el.textContent = 'in ' + d + 'd ' + String(h).padStart(2, '0') + 'h ' + String(m).padStart(2, '0') + 'm ' + String(s).padStart(2, '0') + 's';
       });
     });
+  }
+
+  // ProgrAss 1 is over: its pages still work, and this archive page is the way in (from the home page)
+  function viewArchive() {
+    var solved = PROBLEMS.filter(function (p) { return (store.get('prog-' + p.id, {}).best || 0) > 0; }).length;
+    var solvedPct = PROBLEMS.length ? Math.round(100 * solved / PROBLEMS.length) : 0;
+    var genHist = store.get('gen-history', []);
+    var mock = store.get('pa-mock', null);
+    var items = [
+      ['#/progass', 'ProgrAss practice', 'All ' + PROBLEMS.length + ' CodeRunner problems with hidden tests and penalties, and the timed mock ProgrAss', solved + '/' + PROBLEMS.length + ' solved'],
+      ['#/generator', 'Question generator', 'A fresh, never-seen-before coding question every time', genHist.length ? genHist.length + ' generated' : '∞'],
+    ];
+    if (mock && mock.finished) items.push(['#/progass/mock', 'Last mock ProgrAss result', 'Your marks and recorded warnings from the last mock', '']);
+    app.innerHTML =
+      '<header class="page-head"><div class="kicker">Archive</div><h1>ProgrAss 1 archive</h1>' +
+      '<p class="lede">Programming Assessment 1 (Tue 3 Nov 2026) is done. Everything from it still works here, with your progress saved. The coding questions are still good practice: the Test 1 mock takes its CodeRunner questions from the same bank.</p></header>' +
+      '<section class="toc"><ol>' + items.map(function (t, i) {
+        return '<li><a href="' + t[0] + '"><span class="toc-no">' + (i + 1) + '</span><span class="toc-text"><b>' + esc(t[1]) + '</b><small>' + esc(t[2]) + '</small></span>' +
+          '<span class="toc-dots"></span><span class="toc-meta">' + esc(t[3]) + '</span></a></li>';
+      }).join('') + '</ol></section>' +
+      '<section class="progress-strip"><span class="kicker">Coding progress</span><div class="bar"><span style="width:' + solvedPct + '%"></span></div><span class="mono small">' + solvedPct + '%</span></section>' +
+      '<p style="margin-top:18px"><a class="btn" href="#/">← Back to the home page</a></p>';
   }
 
   // ───────────────────────── material ─────────────────────────

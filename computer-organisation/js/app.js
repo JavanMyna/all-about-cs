@@ -44,13 +44,13 @@ function whyList(q, ord, chosen) {
 }
 
 /* ---------- router ---------- */
-const routes = { home: viewHome, learn: viewLearn, cheat: viewCheat, tests: viewTests, test: viewTest, practice: viewPractice, tutorials: viewTutorials, tools: viewTools };
+const routes = { home: viewHome, learn: viewLearn, cheat: viewCheat, tests: viewTests, test: viewTest, practice: viewPractice, tutorials: viewTutorials, tools: viewTools, archive: viewArchive };
 let cleanup = null;
 function route() {
   if (cleanup) { cleanup(); cleanup = null; }
   const [name = 'home', ...args] = location.hash.replace(/^#\/?/, '').split('/');
   const fn = routes[name] || viewHome;
-  document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('on', a.dataset.r === (name === 'test' ? 'tests' : name) || (!routes[name] && a.dataset.r === 'home')));
+  document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('on', a.dataset.r === (name === 'test' || name === 'archive' ? 'tests' : name) || (!routes[name] && a.dataset.r === 'home')));
   document.body.classList.toggle('in-test', name === 'test');
   fn(...args);
   if (!args[1]) window.scrollTo(0, 0);
@@ -64,24 +64,31 @@ function readCount(t) { const r = store.get('read', {}); return t.sections.filte
 function bestOf(id) { const h = store.get('hist:' + id, []); return h.length ? Math.max(...h.map(x => x.score)) : null; }
 function lastN(id) { const h = store.get('hist:' + id, []); return h.length ? h[h.length - 1].n || 50 : 50; }
 
+// Test 1 is over: its papers live on the archive page (#archive). Everything still works there, scores included.
+const ARCHIVED = ['past', 'mock1', 'mock2', 'random', 'bank1', 'bank2', 'bank3'];
+const allPapers = () => TESTS.concat(DYNAMIC);
+const currentPapers = () => allPapers().filter(t => !ARCHIVED.includes(t.id));
+const archivedPapers = () => allPapers().filter(t => ARCHIVED.includes(t.id));
+function paperRow(t) {
+  const best = bestOf(t.id), inprog = store.get('run:' + t.id, null);
+  return `<tr><td><b>${t.title}</b><small>${t.blurb}</small>${best !== null ? `<span class="best-c">Best so far: ${best}/${lastN(t.id)}</span>` : ''}</td>
+    <td><a class="btn sm" href="#test/${t.id}">${inprog && !inprog.done ? 'Resume' : 'Open'}</a></td></tr>`;
+}
+const archiveCard = () => `<a class="link-card archive-card" href="#archive"><h3>Test 1 archive →</h3><p>Test 1 is done. Last year's paper, both mock papers, the Random Test 1 and the Topic 1–3 banks are kept here, with your scores.</p></a>`;
+
 function viewHome() {
-  const paperRow = t => {
-    const best = bestOf(t.id), inprog = store.get('run:' + t.id, null);
-    return `<tr><td><b>${t.title}</b><small>${t.blurb}</small>${best !== null ? `<span class="best-c">Best so far: ${best}/${lastN(t.id)}</span>` : ''}</td>
-      <td><a class="btn sm ${t.id === 'mock1' ? 'primary' : ''}" href="#test/${t.id}">${inprog && !inprog.done ? 'Resume' : 'Open'}</a></td></tr>`;
-  };
   app.innerHTML = `
   <section class="cover">
     <div class="cover-main">
-      <div class="doc-id"><span>CCA102 / CST131 · Sem 1 2026/27</span><span>Test 1 · Topics 1–3</span></div>
-      <h1>Computer Organisation,<br><em>Test 1</em> revision</h1>
-      <p class="lede">The notes from the three topics, last year's paper with the answers corrected, two mock papers, a random Test 1 that is new every time, a question bank for each topic, drills and solvers that show the working.</p>
-      <div class="hero-cta"><a class="btn primary" href="#learn/t1">Read Topic 1</a><a class="btn" href="#test/past">Open last year's paper</a></div>
+      <div class="doc-id"><span>CCA102 / CST131 · Sem 1 2026/27</span><span>Test 1 done · now Topic 4</span></div>
+      <h1>Computer Organisation<br><em>revision</em></h1>
+      <p class="lede">Notes for every topic so far, a question bank for the new Topic 4 (Digital Logic), drills and solvers that show the working. Everything from Test 1 is in the archive.</p>
+      <div class="hero-cta"><a class="btn primary" href="#learn/t4">Read Topic 4</a><a class="btn" href="#test/bank4">Topic 4 question bank</a><a class="btn" href="#archive">Test 1 archive</a></div>
     </div>
     <dl class="spec">
-      <div><dt>Format</dt><dd>50 MCQ, 60 min</dd></div>
-      <div><dt>Coverage</dt><dd>Topics 1–3</dd></div>
-      <div><dt>2025/26 split</dt><dd>18 / 14 / 18</dd></div>
+      <div><dt>Test 1</dt><dd>Done · archived</dd></div>
+      <div><dt>Now</dt><dd>Topic 4 · Digital logic</dd></div>
+      <div><dt>Topics</dt><dd>${TOPICS.length} with notes</dd></div>
       <div><dt>Question bank</dt><dd>${BANK.length + 150} + endless calculations</dd></div>
     </dl>
   </section>
@@ -94,26 +101,29 @@ function viewHome() {
     </section>
     <section>
       <h2 class="h-sec"><span>02</span>Papers</h2>
-      <table class="papers">${TESTS.concat(DYNAMIC).map(paperRow).join('')}</table>
+      <table class="papers">${currentPapers().map(paperRow).join('')}</table>
+      ${archiveCard()}
     </section>
   </div>
-
-  <section class="home-block">
-    <h2 class="h-sec"><span>03</span>How to use this</h2>
-    <ol class="plan">
-      <li><b>Read</b> the three topics, about an hour. Keep the <a href="#cheat">cheat sheet</a> open.</li>
-      <li><b>Last year's paper in Study mode.</b> You see the answer after each question.</li>
-      <li><b>Drill</b> conversions and 2's complement until you get 10 right in a row.</li>
-      <li><b>Mock 1 in Exam mode</b> with the 60-minute timer, then go through every wrong answer.</li>
-      <li><b>Re-read your weakest topic</b>, then sit Mock 2.</li>
-      <li><b>Random Test 1</b> in Exam mode, again and again: every attempt is a new paper with last year's shape. Use the <b>topic banks</b> in Study mode for your weak topic.</li>
-    </ol>
-  </section>
 
   <div class="extras">
     <a class="link-card" href="#tutorials"><h3>Tutorial answers</h3><p>Worked solutions for Tutorials 1–3 and every slide activity.</p></a>
     <a class="link-card" href="#tools"><h3>Solvers</h3><p>Enter any number and get the full working: conversions, 2's complement, Booth, division, IEEE 754, MIPS.</p></a>
   </div>`;
+}
+
+function viewArchive() {
+  app.innerHTML = `<div class="page-head"><div><p class="eyebrow">Archive · Test 1 (Topics 1–3)</p><h1>Test 1 archive</h1><p class="lede">Test 1 is done. Every Test 1 paper is still here and still works, with your past scores. Use them to revise Topics 1–3 for the final exam.</p></div><a class="btn" href="#home">← Back to the index</a></div>
+  <table class="papers">${archivedPapers().map(paperRow).join('')}</table>
+  <section class="home-block">
+    <h2 class="h-sec"><span>—</span>How these papers were used for Test 1</h2>
+    <ol class="plan">
+      <li><b>Last year's paper in Study mode.</b> You see the answer after each question.</li>
+      <li><b>Mock 1 in Exam mode</b> with the 60-minute timer, then go through every wrong answer.</li>
+      <li><b>Re-read your weakest topic</b>, then sit Mock 2.</li>
+      <li><b>Random Test 1</b> in Exam mode: every attempt is a new paper with last year's shape. Use the <b>topic banks</b> in Study mode for a weak topic.</li>
+    </ol>
+  </section>`;
 }
 
 /* =====================================================================
@@ -169,15 +179,15 @@ function viewCheat() {
    TESTS — list + runner
    ===================================================================== */
 function viewTests() {
-  app.innerHTML = `<div class="page-head"><div><p class="eyebrow">§02 · 3 fixed papers + papers that are new every time</p><h1>Papers</h1><p class="lede">Choose <b>Study mode</b> to see the answer after every question, or <b>Exam mode</b> for a timed run with results at the end.</p></div></div>
-  <div class="grid3">${TESTS.concat(DYNAMIC).map(t => {
+  app.innerHTML = `<div class="page-head"><div><p class="eyebrow">§02 · Current papers</p><h1>Papers</h1><p class="lede">Choose <b>Study mode</b> to see the answer after every question, or <b>Exam mode</b> for a timed run with results at the end.</p></div></div>
+  <div class="grid3">${currentPapers().map(t => {
     const h = store.get('hist:' + t.id, []);
     return `<div class="tcard static">
       <div class="tcard-top"><span class="pill ${t.id === 'past' ? 'pill-amber' : 'pill-accent'}">${t.id === 'past' ? 'Real paper' : t.id === 'random' ? 'New every time' : t.build ? 'Topic bank' : 'Mock paper'}</span>${h.length ? `<span class="best">Best ${Math.max(...h.map(x => x.score))}/${h[h.length - 1].n || 50}</span>` : ''}</div>
       <h3>${t.title}</h3><p>${t.blurb}</p>
       ${h.length ? `<div class="hist">${h.slice(-5).map(x => `<span title="${new Date(x.at).toLocaleString()}">${x.score}</span>`).join('')}</div>` : ''}
       <div class="row"><a class="btn primary" href="#test/${t.id}">Open</a></div>
-    </div>`; }).join('')}</div>`;
+    </div>`; }).join('')}</div>${archiveCard()}`;
 }
 
 function newRun(test, mode) {

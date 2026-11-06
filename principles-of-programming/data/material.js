@@ -691,7 +691,7 @@ int main() {
 <tr><td><code>ios::binary</code></td><td>binary mode (not text)</td></tr></table>
 <p>Combine flags with <code>|</code>. For a file that must be <b>read from and written to</b> without losing what is in it, the past Test 1 answer was
 <code>myFile.open("inout.txt", ios::in | ios::app);</code> (its feedback: <i>ios::out will wipe out the existing content</i>). The flags are not in the Week 6 slides, but they were in the past test.</p>
-<div class="callout"><b>Practise:</b> the ProgrAss page has the 10 file-processing lab questions (filter <b>Files</b>). The checker creates the input files for you and shows the files your program writes.</div>` },
+<div class="callout"><b>Practise:</b> the ProgrAss practice page (open it from the <a href="#/archive">ProgrAss 1 archive</a>) has the 10 file-processing lab questions (filter <b>Files</b>). The checker creates the input files for you and shows the files your program writes.</div>` },
   ],
 },
 {
