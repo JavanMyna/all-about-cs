@@ -1,4 +1,5 @@
 # CS Courses: Year 1 Semester 1
+https://cs2627.dev/
 
 One website with revision material for every course this semester. Made by [@baswara.hm](https://www.instagram.com/baswara.hm/).
 
