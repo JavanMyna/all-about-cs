@@ -1,5 +1,7 @@
 # CS Courses: Year 1 Semester 1
 
+> Live on https://cs2627.dev/
+
 One website with revision material for every course this semester. Made by [@baswara.hm](https://www.instagram.com/baswara.hm/).
 
 | Course | Folder |
@@ -13,6 +15,19 @@ One website with revision material for every course this semester. Made by [@bas
 Each course navbar shows when it was last updated (Malaysia time) and a one-sentence note. To change it, edit that course's `at` and `text` in [`updates.js`](updates.js).
 
 It is a static site (plain HTML, CSS and JavaScript, no build step).
+
+## Screenshots
+The main page:  
+<img width="480" height="250" alt="Main page" src="https://github.com/user-attachments/assets/5432c925-c3c3-4ee1-8b8f-5611548e6409" />
+
+CKC111:  
+<img width="480" height="250" alt="CKC111 page" src="https://github.com/user-attachments/assets/39f1041f-cdb8-4576-9430-d8db6b30e23e" />
+
+CCA101:  
+<img width="480" height="250" alt="CCA101 page" src="https://github.com/user-attachments/assets/345f247f-2b22-48b4-9979-caf77eb4707b" />
+
+CCA102:  
+<img width="480" height="250" alt="CCA102 page" src="https://github.com/user-attachments/assets/5b6b4708-f419-4dce-b168-56df397c64a3" />
 
 ## Lecturer material stays private
 
