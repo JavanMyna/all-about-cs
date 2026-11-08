@@ -269,10 +269,15 @@
   }
 
   // ───────────────────────── quiz ─────────────────────────
-  var MOCK_QUESTIONS = 30;
-  // Like the past Test 1, the mock also has 2–5 CodeRunner questions mixed in (default 4), worth CODE_MARKS each,
-  // with the Moodle quiz penalty regime "10, 20, ... %" (the first Check is free).
-  var CODING_CHOICES = [2, 3, 4, 5], CODING_DEFAULT = 4, CODE_MARKS = 10;
+  // The mock follows the 2025/26 past Test 1: Section A = 10 single-answer questions (2 marks each),
+  // Section B = 10 select-one-or-more questions (3 marks each), Section C = 3 CodeRunner programs (15, 15 and 20 marks): 100 marks.
+  // CodeRunner answers use the Moodle penalty regime "10, 20, ... %" (the first Check is free).
+  var SEC_A = 10, SEC_A_MARKS = 2, SEC_B = 10, SEC_B_MARKS = 3, SEC_C_MARKS = [15, 15, 20];
+  // attempts saved before this format had no marks per item: their questions were 1 mark and programs CODE_MARKS
+  var CODING_DEFAULT = 4, CODE_MARKS = 10;
+  var MOCK_NOTICE = '<div class="callout warn mock-notice"><b>Please read:</b> this mock only uses <b>possible questions</b> written from the lecture slides, ' +
+    'the labs and the past Test 1. It copies the <b>format</b> of the 2025/26 paper (Section A, B and C, 100 marks, 1 hour), not its questions. ' +
+    'The real Test 1 will ask different questions and may test the same ideas in other ways, so treat this as practice, not a prediction, and revise the notes as well.</div>';
   // the real Test 1 is 1 hour (17:30–18:30), whatever the number of programming questions
   var TEST1_MINUTES = 60;
   function mockMinutes() { return TEST1_MINUTES; }
@@ -286,8 +291,21 @@
     var fromPast = shuffle(past).slice(0, Math.ceil(count / 2));
     return fromPast.concat(shuffle(rest).slice(0, count - fromPast.length)).map(function (p) { return p.id; });
   }
-  function addCoding(items, ids) {
-    ids.forEach(function (id) { items.splice(Math.floor(Math.random() * (items.length + 1)), 0, { c: id }); });
+  // Section C: two shorter programs (like the menu calculator and the digit reversal) and one pattern program (like the number pyramid)
+  function isPattern(p) { return /pattern|pyramid|triangle|diamond|floyd/i.test(p.title); }
+  function pickSectionC() {
+    var shortOnes = PROBLEMS.filter(function (p) {
+      return !isPattern(p) && p.set !== 'extreme' && p.set !== 'hard' && (p.set === 'past' || p.set === 'steps' || p.set === 'week6' || p.set === 'files' || p.level <= 2);
+    });
+    var patterns = PROBLEMS.filter(function (p) { return isPattern(p) && p.set !== 'extreme'; });
+    return shuffle(shortOnes).slice(0, 2).concat(shuffle(patterns).slice(0, 1)).map(function (p) { return p.id; });
+  }
+  function buildPastFormatMock() {
+    var all = QUIZ.map(function (_, i) { return i; });
+    var secA = shuffle(all.filter(function (i) { return !QUIZ[i].m; })).slice(0, SEC_A).map(function (i) { return { q: i, mk: SEC_A_MARKS, sec: 'A' }; });
+    var secB = shuffle(all.filter(function (i) { return QUIZ[i].m; })).slice(0, SEC_B).map(function (i) { return { q: i, mk: SEC_B_MARKS, sec: 'B' }; });
+    var secC = pickSectionC().map(function (id, k) { return { c: id, mk: SEC_C_MARKS[k], sec: 'C' }; });
+    return secA.concat(secB, secC);
   }
 
   // Moodle-style marking: each correct option ticked earns 1/k, each wrong option ticked loses 1/k, never below 0.
@@ -327,13 +345,15 @@
       'In multiple-answer questions each correct tick earns part of the mark and each wrong tick takes the same amount off, so don\'t tick everything.</p></header>' +
       '<div class="grid grid-2">' +
         '<div class="card"><h2>Timed mock test</h2>' +
-          '<p>' + MOCK_QUESTIONS + ' random questions from all ' + QUIZ.length + ' + programming (CodeRunner) questions, ' + CODE_MARKS +
-            ' marks each, compiled with g++ like the past Test 1. ' + TEST1_MINUTES + ' minutes, like the real Test 1. Review with explanations at the end.</p>' +
+          '<p>Same format as the 2025/26 past Test 1, with new questions every attempt from all ' + QUIZ.length + ' questions and the CodeRunner bank:</p>' +
+          '<table class="mini"><tr><th>Section</th><th>Questions</th><th>Marks</th></tr>' +
+            '<tr><td>A</td><td>' + SEC_A + ' single answer</td><td>' + SEC_A + ' × ' + SEC_A_MARKS + ' = ' + SEC_A * SEC_A_MARKS + '</td></tr>' +
+            '<tr><td>B</td><td>' + SEC_B + ' select one or more</td><td>' + SEC_B + ' × ' + SEC_B_MARKS + ' = ' + SEC_B * SEC_B_MARKS + '</td></tr>' +
+            '<tr><td>C</td><td>' + SEC_C_MARKS.length + ' programs (CodeRunner, g++)</td><td>' + SEC_C_MARKS.join(' + ') + ' = ' + SEC_C_MARKS.reduce(function (a, b) { return a + b; }, 0) + '</td></tr>' +
+          '</table>' +
+          '<p>' + TEST1_MINUTES + ' minutes, like the real Test 1. Review with explanations at the end.</p>' +
+          MOCK_NOTICE +
           (mock && !mock.finished ? '<p class="pill warn">Attempt in progress</p> ' : '') +
-          '<label class="small muted">Programming questions <select id="codeCount" class="select">' + CODING_CHOICES.map(function (n) {
-            return '<option value="' + n + '"' + (n === store.get('mock-coding', CODING_DEFAULT) ? ' selected' : '') + '>' + n + ' (' +
-              (MOCK_QUESTIONS + n * CODE_MARKS) + ' marks)</option>';
-          }).join('') + '</select></label>' +
           '<div class="row" style="margin-top:10px">' +
             (mock && !mock.finished ? '<a class="btn primary" href="#/quiz/mock">Continue attempt</a><button class="btn" id="newMock">Start over</button>'
               : '<button class="btn primary" id="newMock">Start mock test</button>') +
@@ -352,11 +372,7 @@
       '</div>';
     $('#newMock').addEventListener('click', function () {
       if (mock && !mock.finished && !confirm('Discard the attempt in progress?')) return;
-      var coding = +$('#codeCount').value || CODING_DEFAULT;
-      store.set('mock-coding', coding);
-      var items = shuffle(QUIZ.map(function (_, i) { return i; })).slice(0, MOCK_QUESTIONS).map(function (i) { return { q: i }; });
-      // put the programming questions at random places in the paper, as in the past Test 1
-      addCoding(items, pickTestCoding(coding));
+      var items = buildPastFormatMock();
       store.set('quiz-mock', { items: items, answers: {}, flags: {}, codes: {}, checks: {}, marks: {}, results: {}, checkedCode: {},
         cur: 0, start: Date.now(), end: Date.now() + mockMinutes() * 60000, finished: false });
       store.set('quiz-warnings', []);
@@ -410,8 +426,8 @@
     }
     var items = st.items;
     function save() { store.set('quiz-mock', st); }
-    function maxOf(it) { return it.c ? CODE_MARKS : 1; }
-    function scoreOf(it, i) { return it.c ? (st.marks[i] || 0) / 100 * CODE_MARKS : scoreQ(QUIZ[it.q], st.answers[i]); }
+    function maxOf(it) { return it.mk || (it.c ? CODE_MARKS : 1); }
+    function scoreOf(it, i) { return it.c ? (st.marks[i] || 0) / 100 * maxOf(it) : scoreQ(QUIZ[it.q], st.answers[i]) * maxOf(it); }
     function answered(it, i) { return it.c ? !!(st.codes[i] || '').trim() : (st.answers[i] || []).length > 0; }
     var totalMax = items.reduce(function (a, it) { return a + maxOf(it); }, 0);
 
@@ -427,7 +443,7 @@
         var mark = allPass ? 100 - pen : 0;
         st.marks[i] = Math.max(st.marks[i] || 0, mark);
         st.checkedCode[i] = code;
-        st.results[i] = (allPass ? '<div class="result-banner ok">Passed all tests! ✓ Mark for this submission: ' + round2(mark / 100 * CODE_MARKS) + ' / ' + CODE_MARKS + '</div>'
+        st.results[i] = (allPass ? '<div class="result-banner ok">Passed all tests! ✓ Mark for this submission: ' + round2(mark / 100 * maxOf(items[i])) + ' / ' + maxOf(items[i]) + '</div>'
           : '<div class="result-banner bad">' + (res.compileError ? 'Compilation failed.' : 'Passed ' + passed + ' of ' + idxs.length + ' tests.') +
             ' Your code must pass every test to earn marks.</div>') + renderResults(p, idxs, res, allPass);
         save();
@@ -487,10 +503,12 @@
           '<div class="muted">' + finalScore + ' / ' + finalMax + ' marks · review each question below</div><span class="spacer"></span>' +
           warningsNote('quiz-warnings') +
           '<a class="btn" href="#/quiz">Back</a></div></div>' : '') +
+        (n === 0 && it.sec ? MOCK_NOTICE : '') +
         '<div class="quiz-layout">' +
           '<div class="card question">' +
             '<div class="qhead"><div><b>Question ' + (n + 1) + '</b> <span class="muted small">of ' + items.length + '</span> ' +
-              (it.c ? '<span class="pill accent">Programming · ' + CODE_MARKS + ' marks</span>' : '<span class="pill">' + esc(topicTitle(q.t)) + '</span>') + '</div>' +
+              (it.sec ? '<span class="pill">Section ' + it.sec + ' · ' + maxOf(it) + ' marks</span> ' : '') +
+              (it.c ? '<span class="pill accent">Programming' + (it.sec ? '' : ' · ' + maxOf(it) + ' marks') + '</span>' : '<span class="pill">' + esc(topicTitle(q.t)) + '</span>') + '</div>' +
               (done ? '<span class="pill ' + pillClass(frac) + '">Mark ' + round2(s) + ' / ' + maxOf(it) + '</span>'
                 : '<label class="small"><input type="checkbox" id="flag"' + (st.flags[n] ? ' checked' : '') + '> Flag question</label>') +
             '</div>' +
@@ -511,13 +529,15 @@
           '<aside class="card qnav">' +
             '<b>Quiz navigation</b>' +
             (!done ? '<div class="row" style="margin-top:6px"><span class="muted small">Time left</span><span class="timer" id="timer"></span></div>' : '') +
-            '<div class="qgrid">' + items.map(function (x, i) {
+            // like Moodle, the buttons are grouped under Section A / B / C (older attempts have no sections)
+            (items.some(function (x) { return x.sec; }) ? '' : '<div class="qgrid">') + items.map(function (x, i) {
               var c = '';
               if (done) c = scoreClass(scoreOf(x, i) / maxOf(x));
               else if (answered(x, i)) c = 'answered';
               if (i === n) c += ' current';
               if (st.flags[i] && !done) c += ' flag';
-              return '<button data-go="' + i + '" class="' + c + '"' + (x.c ? ' title="Programming question"' : '') + '>' + (i + 1) + (x.c ? '*' : '') + '</button>';
+              var head = x.sec && (i === 0 || items[i - 1].sec !== x.sec) ? (i ? '</div>' : '') + '<div class="qsec">Section ' + x.sec + '</div><div class="qgrid">' : '';
+              return head + '<button data-go="' + i + '" class="' + c + '"' + (x.c ? ' title="Programming question"' : '') + '>' + (i + 1) + (x.c ? '*' : '') + '</button>';
             }).join('') + '</div>' +
             '<div class="muted small" style="margin:6px 0">* = programming question</div>' +
             (!done ? '<button class="btn small" id="finish2">Finish attempt…</button>' : '') +

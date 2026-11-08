@@ -218,6 +218,7 @@ pre.code {
 .quiz-layout { display: grid; grid-template-columns: 1fr 230px; gap: 24px; align-items: start; }
 .qnav { position: sticky; top: 80px; }
 .qgrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 12px 0 14px; }
+.qsec { margin: 12px 0 -6px; font-family: var(--mono, monospace); font-size: .78rem; font-weight: 600; letter-spacing: .04em; }   /* Section A / B / C in the mock navigation */
 .qgrid button {
   aspect-ratio: 1; border: 1px solid var(--rule-strong); background: var(--sheet);
   cursor: pointer; font: 500 12.5px var(--mono); position: relative;
