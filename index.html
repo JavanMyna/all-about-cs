@@ -43,6 +43,14 @@
   .eyebrow { font: 500 .75rem var(--mono); color: var(--ink-3); text-transform: uppercase; letter-spacing: .08em; margin: 0 0 8px; }
   h1 { font: 600 clamp(2rem, 5vw, 2.8rem)/1.1 var(--serif); margin: 0 0 10px; letter-spacing: -.01em; }
   .lede { color: var(--ink-2); margin: 0 0 36px; max-width: 56ch; }
+  .reminder { --c: var(--fp); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin: -12px 0 32px; padding: 14px 16px; background: var(--paper); border: 1px solid var(--rule); border-left: 4px solid var(--c); }
+  .rem-tag { font: 600 .7rem var(--mono); color: var(--c); text-transform: uppercase; letter-spacing: .08em; }
+  .rem-body { display: flex; flex-direction: column; gap: 2px; flex: 1 1 260px; min-width: 0; }
+  .rem-body span { color: var(--ink-2); font-size: .92rem; }
+  .rem-body .rem-count { font: 600 .82rem var(--mono); color: var(--c); }
+  .rem-links { display: flex; flex-wrap: wrap; gap: 8px; }
+  .rem-links a { font: 500 .78rem var(--mono); color: var(--ink); text-decoration: none; border: 1px solid var(--ink); padding: 5px 10px; }
+  .rem-links a:hover { background: var(--ink); color: var(--paper); }
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 20px; }
   .course { --c: var(--ink); display: flex; flex-direction: column; background: var(--paper); border: 1px solid var(--rule); border-top: 4px solid var(--c); padding: 22px 22px 18px; color: inherit; text-decoration: none; transition: transform .15s, box-shadow .15s; }
   .course:hover { transform: translateY(-3px); box-shadow: 0 10px 24px -14px rgba(0,0,0,.45); }
@@ -77,6 +85,16 @@
   <p class="eyebrow">CS Courses · 2026/2027</p>
   <h1>Year 1 Semester 1</h1>
   <p class="lede">Pick a course to open its revision site: notes, tutorials, mock tests and practice.</p>
+  <!-- reminder for the next test; it hides itself once the test has ended (data-end) -->
+  <aside class="reminder" id="reminder" data-start="2026-11-10T17:30:00+08:00" data-end="2026-11-10T18:30:00+08:00">
+    <div class="rem-tag">Reminder</div>
+    <div class="rem-body">
+      <b>Principles of Programming · Test 1</b>
+      <span>Tue 10 Nov 2026 · 17:30 – 18:30 (1 hour) · DUP C · Weeks 1–7 (up to basic file processing)</span>
+      <span class="rem-count" id="remCount"></span>
+    </div>
+    <div class="rem-links"><a href="principles-of-programming/#/quiz">Sit the mock test</a><a href="principles-of-programming/#/material">Revise the notes</a></div>
+  </aside>
 
   <div class="grid">
     <a class="course co" href="computer-organisation/">
@@ -114,5 +132,21 @@
   });
 </script>
 <script src="online.js?v=20261101a" data-course="hub"></script>
+<script>
+  // countdown for the reminder; the reminder is removed after the test has ended
+  (function () {
+    var r = document.getElementById("reminder"), out = document.getElementById("remCount");
+    if (!r) return;
+    var start = new Date(r.getAttribute("data-start")), end = new Date(r.getAttribute("data-end"));
+    function tick() {
+      var now = new Date();
+      if (now >= end) { r.remove(); clearInterval(t); return; }
+      if (now >= start) { out.textContent = "Happening now. Good luck!"; return; }
+      var ms = start - now, d = Math.floor(ms / 864e5), h = Math.floor(ms / 36e5) % 24, m = Math.floor(ms / 6e4) % 60;
+      out.textContent = "Starts in " + (d ? d + "d " : "") + h + "h " + String(m).padStart(2, "0") + "m";
+    }
+    var t = setInterval(tick, 30000); tick();
+  })();
+</script>
 </body>
 </html>
