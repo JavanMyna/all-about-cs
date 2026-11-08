@@ -4,3 +4,7 @@ private/
 
 # Local tool settings
 .claude/
+
+# AI agent notes (personal use only)
+AGENTS.md
+DESIGNS.md
