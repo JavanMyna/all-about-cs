@@ -307,14 +307,25 @@
     var secC = pickSectionC().map(function (id, k) { return { c: id, mk: SEC_C_MARKS[k], sec: 'C' }; });
     return secA.concat(secB, secC);
   }
+  // the real 2025/26 paper, in its own order: its 10 + 10 questions (p: true in data/quiz-past.js) and its three programs
+  var PAST_PROGRAMS = ['pt-menu-calc', 'pt-reverse-palindrome', 'pt-number-pyramid'];
+  function buildPastPaper() {
+    var past = QUIZ.map(function (_, i) { return i; }).filter(function (i) { return QUIZ[i].p; });
+    var secA = past.filter(function (i) { return !QUIZ[i].m; }).map(function (i) { return { q: i, mk: SEC_A_MARKS, sec: 'A' }; });
+    var secB = past.filter(function (i) { return QUIZ[i].m; }).map(function (i) { return { q: i, mk: SEC_B_MARKS, sec: 'B' }; });
+    var secC = PAST_PROGRAMS.map(function (id, k) { return { c: id, mk: SEC_C_MARKS[k], sec: 'C' }; });
+    return secA.concat(secB, secC);
+  }
 
-  // Moodle-style marking: each correct option ticked earns 1/k, each wrong option ticked loses 1/k, never below 0.
+  // Fair marking. Single answer: all or nothing. Select one or more: every option counts like a test case:
+  // ticking a right option, or leaving a wrong one unticked, earns 1/n of the mark (n = number of options).
+  // A question left completely blank earns nothing.
   function scoreQ(q, sel) {
     sel = sel || [];
     if (!q.m) return sel.length === 1 && sel[0] === q.a[0] ? 1 : 0;
-    var k = q.a.length, good = 0, badN = 0;
-    sel.forEach(function (i) { if (q.a.indexOf(i) >= 0) good++; else badN++; });
-    return Math.max(0, (good - badN) / k);
+    if (!sel.length) return 0;
+    var right = q.o.filter(function (_, i) { return (sel.indexOf(i) >= 0) === (q.a.indexOf(i) >= 0); }).length;
+    return right / q.o.length;
   }
   function scoreClass(s) { return s >= 0.999 ? 'right' : s > 0 ? 'partial' : 'wrong'; }
   // why each option is right or wrong (data/quiz-why.js, or q.w), shown under the explanation once a question is marked.
@@ -341,8 +352,14 @@
     QUIZ.forEach(function (q) { if (topics.indexOf(q.t) < 0) topics.push(q.t); });
     app.innerHTML =
       '<header class="page-head"><div class="kicker">Section 2</div><h1>Test 1 mock</h1>' +
-      '<p class="lede">Like the Moodle quiz: some questions have one answer (radio), others are <b>select one or more</b> (checkboxes). ' +
-      'In multiple-answer questions each correct tick earns part of the mark and each wrong tick takes the same amount off, so don\'t tick everything.</p></header>' +
+      '<p class="lede">Like the Moodle quiz: some questions have one answer (radio), others are <b>select one or more</b> (checkboxes).</p>' +
+      '<div class="callout"><b>How marks are given (fair marking):</b><ul style="margin:6px 0 0">' +
+        '<li><b>Single answer:</b> full marks for the right choice, 0 otherwise.</li>' +
+        '<li><b>Select one or more:</b> every option counts like a test case. Ticking a right option or leaving a wrong one unticked earns an equal share: ' +
+          'a 3-mark question with 4 options gives 0.75 for each option you decide correctly. A blank question earns 0.</li>' +
+        '<li><b>Programming:</b> each test case you pass earns the question\'s marks ÷ the number of tests: 10 marks and 10 tests = 1 mark per test, ' +
+          '20 marks and 10 tests = 2 marks per test. The check penalty (10, 20, … %) is then taken off, and your best check counts.</li>' +
+      '</ul></div></header>' +
       '<div class="grid grid-2">' +
         '<div class="card"><h2>Timed mock test</h2>' +
           '<p>Same format as the 2025/26 past Test 1, with new questions every attempt from all ' + QUIZ.length + ' questions and the CodeRunner bank:</p>' +
@@ -359,8 +376,11 @@
               : '<button class="btn primary" id="newMock">Start mock test</button>') +
             (mock && mock.finished ? '<a class="btn" href="#/quiz/mock">Review last attempt</a>' : '') +
           '</div>' +
+          '<div class="past-paper"><h3>Past Test 1 (2025/26)</h3><p class="small">The real paper: its 10 Section A and 10 Section B questions in their order, and its three programs ' +
+            '(menu calculator, reverse and palindrome, number pyramid). Same timer, marking and review.</p>' +
+            '<button class="btn" id="pastPaper">Sit the past year paper</button></div>' +
           (hist.length ? '<h3 style="margin-top:18px">Past attempts</h3><table class="mini"><tr><th>Date</th><th>Score</th></tr>' +
-            hist.slice(-6).reverse().map(function (h) { return '<tr><td>' + esc(new Date(h.date).toLocaleString()) + '</td><td><b>' + h.pct + '%</b> (' + h.score + ' / ' + h.total + ')</td></tr>'; }).join('') + '</table>' : '') +
+            hist.slice(-6).reverse().map(function (h) { return '<tr><td>' + esc(new Date(h.date).toLocaleString()) + '</td><td><b>' + h.pct + '%</b> (' + h.score + ' / ' + h.total + ')' + (h.kind === 'past' ? ' · past paper' : '') + '</td></tr>'; }).join('') + '</table>' : '') +
         '</div>' +
         '<div class="card"><h2>Practice by topic</h2><p>Instant feedback after each question. Pick topics:</p>' +
           '<div class="topic-checks">' + topics.map(function (t) {
@@ -370,15 +390,17 @@
           '<button class="btn primary" id="startPractice">Start practice</button>' +
         '</div>' +
       '</div>';
-    $('#newMock').addEventListener('click', function () {
+    // both papers use the same attempt slot (one attempt at a time); kind says which one it is
+    function startPaper(items, kind) {
       if (mock && !mock.finished && !confirm('Discard the attempt in progress?')) return;
-      var items = buildPastFormatMock();
-      store.set('quiz-mock', { items: items, answers: {}, flags: {}, codes: {}, checks: {}, marks: {}, results: {}, checkedCode: {},
+      store.set('quiz-mock', { items: items, kind: kind, answers: {}, flags: {}, codes: {}, checks: {}, marks: {}, results: {}, checkedCode: {},
         cur: 0, start: Date.now(), end: Date.now() + mockMinutes() * 60000, finished: false });
       store.set('quiz-warnings', []);
       window.Lockdown.enterFullscreen();
       location.hash = '#/quiz/mock';
-    });
+    }
+    $('#newMock').addEventListener('click', function () { startPaper(buildPastFormatMock(), 'mock'); });
+    $('#pastPaper').addEventListener('click', function () { startPaper(buildPastPaper(), 'past'); });
     $('#startPractice').addEventListener('click', function () {
       var sel = $all('.topic-checks input:checked').map(function (c) { return c.value; });
       if (!sel.length) return;
@@ -431,21 +453,25 @@
     function answered(it, i) { return it.c ? !!(st.codes[i] || '').trim() : (st.answers[i] || []).length > 0; }
     var totalMax = items.reduce(function (a, it) { return a + maxOf(it); }, 0);
 
-    // Check a programming answer: every test must pass; the mark is 100% minus the penalty for this check, best mark kept.
+    // Check a programming answer. Fair marking: each test case passed earns an equal share of the marks
+    // (10 tests, 10 marks → 1 mark per test), then the penalty for this check is taken off. The best mark is kept.
     function checkCode(i) {
       var p = problemById(items[i].c), code = st.codes[i] || '';
       st.checks[i] = (st.checks[i] || 0) + 1;
       var pen = quizPenalty(st.checks[i]);
       var idxs = p.tests.map(function (_, k) { return k; });
       return runTests(p, idxs, code).then(function (res) {
-        var passed = res.results.filter(function (r) { return r && r.pass; }).length;
-        var allPass = !res.compileError && passed === idxs.length;
-        var mark = allPass ? 100 - pen : 0;
+        var passed = res.compileError ? 0 : res.results.filter(function (r) { return r && r.pass; }).length;
+        var allPass = passed === idxs.length;
+        var mark = passed / idxs.length * (100 - pen);
+        var max = maxOf(items[i]);
         st.marks[i] = Math.max(st.marks[i] || 0, mark);
         st.checkedCode[i] = code;
-        st.results[i] = (allPass ? '<div class="result-banner ok">Passed all tests! ✓ Mark for this submission: ' + round2(mark / 100 * maxOf(items[i])) + ' / ' + maxOf(items[i]) + '</div>'
-          : '<div class="result-banner bad">' + (res.compileError ? 'Compilation failed.' : 'Passed ' + passed + ' of ' + idxs.length + ' tests.') +
-            ' Your code must pass every test to earn marks.</div>') + renderResults(p, idxs, res, allPass);
+        st.results[i] = '<div class="result-banner ' + (allPass ? 'ok' : passed ? 'warn' : 'bad') + '">' +
+            (res.compileError ? 'Compilation failed, so no test can pass.' : (allPass ? 'Passed all tests! ✓ ' : 'Passed ' + passed + ' of ' + idxs.length + ' tests. ')) +
+            ' Mark for this submission: ' + round2(mark / 100 * max) + ' / ' + max +
+            (pen ? ' (' + passed + '/' + idxs.length + ' tests, minus the ' + pen + '% penalty)' : ' (' + passed + '/' + idxs.length + ' tests)') + '</div>' +
+          renderResults(p, idxs, res, allPass);
         save();
         return allPass;
       });
@@ -465,7 +491,7 @@
           var total = items.reduce(function (a, it, i) { return a + scoreOf(it, i); }, 0);
           st.score = round2(total); st.total = totalMax;
           var hist = store.get('quiz-history', []);
-          hist.push({ date: Date.now(), score: st.score, total: totalMax, pct: Math.round(100 * total / totalMax) });
+          hist.push({ date: Date.now(), score: st.score, total: totalMax, pct: Math.round(100 * total / totalMax), kind: st.kind });
           store.set('quiz-history', hist);
           window.Lockdown.stop();
           st.cur = 0; save(); render();
@@ -503,7 +529,7 @@
           '<div class="muted">' + finalScore + ' / ' + finalMax + ' marks · review each question below</div><span class="spacer"></span>' +
           warningsNote('quiz-warnings') +
           '<a class="btn" href="#/quiz">Back</a></div></div>' : '') +
-        (n === 0 && it.sec ? MOCK_NOTICE : '') +
+        (n === 0 && it.sec && st.kind !== 'past' ? MOCK_NOTICE : '') +
         '<div class="quiz-layout">' +
           '<div class="card question">' +
             '<div class="qhead"><div><b>Question ' + (n + 1) + '</b> <span class="muted small">of ' + items.length + '</span> ' +

@@ -330,6 +330,9 @@ table.tests tr.fail { background: var(--pen-soft); }
   transform: rotate(-1.2deg); padding: 8px 14px; background: transparent;
 }
 .result-banner.bad { color: var(--pen); border-left: 3px solid var(--pen); background: var(--pen-soft); }
+.result-banner.warn { border-left: 3px solid var(--warn); background: var(--warn-soft); }   /* some tests passed: partial marks */
+.past-paper { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--rule); }
+.past-paper h3 { margin: 0 0 4px; }
 .result-banner.info { color: var(--muted); border-left: 3px solid var(--rule-strong); font-weight: 500; }
 pre.console {
   background: var(--console-bg); color: var(--console-text); padding: 12px 14px; min-height: 100px; max-height: 360px;

@@ -6,7 +6,7 @@
   var UPDATES = {
     'computer-organisation': { at: '2026-11-06T21:09+08:00', text: 'New Topic 4: Digital Logic notes, cheat sheet and a question bank with K-map, decoder and adder questions.' },
     'discrete-structures': { at: '2026-11-01T20:47+08:00', text: 'New Week 6: Graphs (Chapter 4), with a graph lab, a Dijkstra table and Tutorial 5 as practice.' },
-    'principles-of-programming': { at: '2026-11-08T21:43+08:00', text: 'Test 1 mock now uses the past-paper format: Section A, B and C, 100 marks, 1 hour. Past-year questions added.' },
+    'principles-of-programming': { at: '2026-11-08T23:08+08:00', text: 'Sit the real 2025/26 past Test 1 paper, and fairer marks: per test case for programs, per option for Section B.' },
   };
 
   var me = document.currentScript;
