@@ -6,7 +6,7 @@
   var UPDATES = {
     'computer-organisation': { at: '2026-11-06T21:09+08:00', text: 'New Topic 4: Digital Logic notes, cheat sheet and a question bank with K-map, decoder and adder questions.' },
     'discrete-structures': { at: '2026-11-01T20:47+08:00', text: 'New Week 6: Graphs (Chapter 4), with a graph lab, a Dijkstra table and Tutorial 5 as practice.' },
-    'principles-of-programming': { at: '2026-11-02T13:51+08:00', text: 'Week 6 added: Loops Part 2 and Basic File Processing notes, plus 22 lab questions (file questions are checked too).' },
+    'principles-of-programming': { at: '2026-11-08T18:34+08:00', text: 'Test 1 bank now 385 questions (64 new on files and loops), and every option has its own explanation. Mock is 1 hour.' },
   };
 
   var me = document.currentScript;

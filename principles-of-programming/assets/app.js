@@ -299,6 +299,18 @@
     return Math.max(0, (good - badN) / k);
   }
   function scoreClass(s) { return s >= 0.999 ? 'right' : s > 0 ? 'partial' : 'wrong'; }
+  // why each option is right or wrong (data/quiz-why.js, or q.w), shown under the explanation once a question is marked.
+  // ✓ = an option that should be ticked, ✗ = one that should not.
+  function whyList(q, sel) {
+    var w = q.w || (window.QUIZ_WHY && window.QUIZ_WHY[q.q + '\u0001' + q.o[0]]);
+    if (!w) return '';
+    sel = sel || [];
+    return '<div class="why"><b>Why each option</b><ul>' + q.o.map(function (_, i) {
+      var ok = q.a.indexOf(i) >= 0, mine = sel.indexOf(i) >= 0;
+      return '<li class="' + (ok ? 'ok' : 'no') + (mine ? ' mine' : '') + '"><span class="L">' + LETTERS[i] + '</span><span class="W">' +
+        String(w[i] || '').replace(/^Correct\.\s*/, '') + (mine ? ' <em>your answer</em>' : '') + '</span></li>';
+    }).join('') + '</ul></div>';
+  }
   function pillClass(s) { return s >= 0.999 ? 'ok' : s > 0 ? 'warn' : 'bad'; }
 
   function viewQuiz(args) {
@@ -487,7 +499,7 @@
                 '<div class="muted small" style="margin-bottom:8px">' + (q.m ? 'Select one or more:' : 'Select one:') + '</div>' +
                 renderOptions(q, sel, 'q' + n, done) +
                 (done ? '<div class="explain ' + pillClass(s).replace('warn', 'partial').replace('bad', 'bad') + '"><b>Correct answer: ' +
-                  q.a.map(function (i) { return LETTERS[i]; }).join(', ') + '.</b> ' + q.e + '</div>' : '')) +
+                  q.a.map(function (i) { return LETTERS[i]; }).join(', ') + '.</b> ' + q.e + whyList(q, sel) + '</div>' : '')) +
             '<div class="row" style="margin-top:16px">' +
               '<button class="btn" id="prev"' + (n === 0 ? ' disabled' : '') + '>← Previous</button>' +
               (!done && !it.c && sel.length ? '<button class="btn ghost small" id="clear">Clear my choice</button>' : '') +
@@ -588,7 +600,7 @@
           '<div class="muted small" style="margin-bottom:8px">' + (q.m ? 'Select one or more:' : 'Select one:') + '</div>' +
           renderOptions(q, sel, 'p' + n, checked) +
           (checked ? '<div class="explain ' + (s >= .999 ? 'ok' : s > 0 ? 'partial' : 'bad') + '"><b>' + (s >= .999 ? 'Correct!' : s > 0 ? 'Partially correct.' : 'Incorrect.') +
-            ' Answer: ' + q.a.map(function (i) { return LETTERS[i]; }).join(', ') + '.</b> ' + q.e + '</div>' : '') +
+            ' Answer: ' + q.a.map(function (i) { return LETTERS[i]; }).join(', ') + '.</b> ' + q.e + whyList(q, sel) + '</div>' : '') +
           '<div class="row" style="margin-top:16px">' +
             '<button class="btn" id="prev"' + (n === 0 ? ' disabled' : '') + '>← Previous</button><span class="spacer"></span>' +
             (!checked ? '<button class="btn primary" id="check">Check</button>' : '') +

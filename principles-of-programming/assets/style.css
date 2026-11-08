@@ -249,6 +249,18 @@ pre.code {
 .explain.ok { border-left-color: var(--ok); }
 .explain.bad { border-left-color: var(--pen); }
 .explain.partial { border-left-color: var(--warn); }
+/* why each option (data/quiz-why.js) */
+.why { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--rule); }
+.why > b { display: block; margin-bottom: 6px; font-family: var(--mono, monospace); font-size: .74rem; text-transform: uppercase; letter-spacing: .08em; }
+.why ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.why li { display: flex; gap: 10px; align-items: baseline; line-height: 1.45; }
+.why li .L { flex: 0 0 auto; font-family: var(--mono, monospace); font-weight: 600; font-size: .8rem; min-width: 2.6em; }
+.why li.ok .L { color: var(--ok); }
+.why li.no .L { color: var(--pen); }
+.why li.ok .L::after { content: ' ✓'; }
+.why li.no .L::after { content: ' ✗'; }
+.why li.mine .W { font-weight: 600; }
+.why li em { font-style: normal; font-family: var(--mono, monospace); font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; opacity: .7; margin-left: 4px; }
 .topic-checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0 18px; margin: 12px 0 18px; }
 .topic-checks label { display: flex; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--rule); cursor: pointer; }
 .topic-checks input { accent-color: var(--ink); }
