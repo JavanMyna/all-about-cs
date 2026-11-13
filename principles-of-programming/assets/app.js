@@ -48,6 +48,14 @@
   PROBLEMS.sort(function (a, b) {
     return GROUPS.indexOf(groupOf(a)) - GROUPS.indexOf(groupOf(b)) || a.level - b.level;
   });
+  var SORTS = [['topic', 'Topic order'], ['easiest', 'Easiest first'], ['hardest', 'Hardest first']];
+  // stable sort: equal levels keep the canonical group order
+  function orderedProblems(mode) {
+    var list = PROBLEMS.slice();
+    if (mode === 'easiest') list.sort(function (a, b) { return a.level - b.level; });
+    if (mode === 'hardest') list.sort(function (a, b) { return b.level - a.level; });
+    return list;
+  }
   var genCache = {};
   function problemById(id) {
     if (/^gen~/.test(id)) return genCache[id] || (genCache[id] = window.Generator && Generator.parseId(id));
@@ -709,6 +717,10 @@
     if (args[0]) return viewProblem(args[0]);
     var mock = store.get('pa-mock', null);
     var filter = store.get('pa-filter', 'All');
+    var sortBy = store.get('pa-sort', 'topic');
+    var list = orderedProblems(sortBy).filter(function (p) {
+      return filter === 'All' || groupOf(p) === filter || (filter === STEPS && p.set === 'steps') || (filter === PAST && p.set === 'past') || (filter === HARD && p.set === 'hard') || (filter === EXTREME && p.set === 'extreme') || (filter === WEEK6 && (p.set === 'week6' || p.set === 'files'));
+    });
     var solved = PROBLEMS.filter(function (p) { return progState(p.id).best > 0; }).length;
     var countPicker = '<label class="small muted">From <select id="mockSrc" class="select">' +
       [['gen', 'generator (new every time)'], ['bank', 'question bank'], ['mix', 'mix of both']].map(function (o) {
@@ -728,18 +740,23 @@
       '</div></div>' +
       '<div class="row" style="margin:20px 0 10px"><div class="chips" id="chips">' + ['All'].concat(GROUPS, [STEPS, PAST, HARD, EXTREME, WEEK6]).map(function (g) {
         return '<button class="chip' + (g === filter ? ' on' : '') + '" data-f="' + g + '">' + g + '</button>';
-      }).join('') + '</div><span class="spacer"></span><span class="muted small">' + solved + ' / ' + PROBLEMS.length + ' solved</span>' +
+      }).join('') + '</div>' +
+        '<label class="small muted">Sort <select id="sortBy" class="select">' + SORTS.map(function (s) {
+          return '<option value="' + s[0] + '"' + (sortBy === s[0] ? ' selected' : '') + '>' + s[1] + '</option>';
+        }).join('') + '</select></label>' +
+        '<span class="spacer"></span><span class="muted small">' + solved + ' / ' + PROBLEMS.length + ' solved</span>' +
         '<div class="bar" style="width:140px"><span style="width:' + Math.round(100 * solved / PROBLEMS.length) + '%"></span></div></div>' +
-      '<div class="plist">' + PROBLEMS.filter(function (p) { return filter === 'All' || groupOf(p) === filter || (filter === STEPS && p.set === 'steps') || (filter === PAST && p.set === 'past') || (filter === HARD && p.set === 'hard') || (filter === EXTREME && p.set === 'extreme') || (filter === WEEK6 && (p.set === 'week6' || p.set === 'files')); }).map(function (p) {
+      '<div class="plist">' + list.map(function (p, i) {
         var s = progState(p.id);
         var status = s.best > 0 ? '<span class="pill ok">✓ ' + s.best + '%</span>' : s.checks ? '<span class="pill warn">attempted</span>' : '';
-        return '<a class="pitem" href="#/progass/' + p.id + '"><span class="pnum">' + (PROBLEMS.indexOf(p) + 1) + '</span><div><div class="ptitle">' + esc(p.title) + '</div>' +
+        return '<a class="pitem" href="#/progass/' + p.id + '"><span class="pnum">' + (i + 1) + '</span><div><div class="ptitle">' + esc(p.title) + '</div>' +
           '<div class="muted small">' + esc(p.topic) + ' · ' + p.tests.length + ' tests</div></div><span class="spacer"></span>' +
           status + levelStars(p.level) + '</a>';
       }).join('') + '</div>';
     $all('#chips .chip').forEach(function (c) {
       c.addEventListener('click', function () { store.set('pa-filter', c.getAttribute('data-f')); viewProgass([]); });
     });
+    $('#sortBy').addEventListener('change', function () { store.set('pa-sort', this.value); viewProgass([]); });
     $('#mockStart').addEventListener('click', function () {
       if (activeMock() && !confirm('Discard the current mock attempt?')) return;
       var src = $('#mockSrc').value;
@@ -780,7 +797,8 @@
     var code = inMock ? (mock.codes[id] || '') : st.code;
     var checks = inMock ? (mock.checks[id] || 0) : st.checks;
     var examples = p.tests.map(function (t, i) { return i; }).filter(function (i) { return !p.tests[i].hidden; });
-    var pos = PROBLEMS.indexOf(p), prevP = PROBLEMS[pos - 1], nextP = PROBLEMS[pos + 1];
+    var order = orderedProblems(store.get('pa-sort', 'topic'));
+    var pos = order.indexOf(p), prevP = order[pos - 1], nextP = order[pos + 1];
 
     app.innerHTML =
       (inMock ? '<div class="mock-bar"><b>Mock ProgrAss</b>' + mock.ids.map(function (mid, i) {
